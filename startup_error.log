@@ -1,0 +1,286 @@
+﻿Networking has been disabled
+Starting project at C:\Users\leida\.gemini\antigravity\scratch\forge
+node.exe : Error: 
+Cannot find module 'a
+jv/dist/compile/codeg
+en'
+En línea: 1 
+Carácter: 1
++ & "C:\Program Files
+\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Error:    
+ Cannot f...ompil    
+e/codegen':Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+Require stack:
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\ajv-keywords\dist\de
+finitions\typeof.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\ajv-keywords\dist\ke
+ywords\typeof.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\ajv-keywords\dist\ke
+ywords\index.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\ajv-keywords\dist\in
+dex.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\schema-utils\dist\va
+lidate.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\schema-utils\dist\in
+dex.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\expo-router\plugin\b
+uild\index.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\expo-router\app.plug
+in.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config-plugins
+\build\utils\plugin-r
+esolver.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config-plugins
+\build\plugins\withSt
+aticPlugin.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config-plugins
+\build\plugins\withPl
+ugins.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config-plugins
+\build\index.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config\build\p
+lugins\withConfigPlug
+ins.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config\build\C
+onfig.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config\build\i
+ndex.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\cli\build\src\
+start\detectDevClient
+.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\cli\build\src\
+start\resolveOptions.
+js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\cli\build\src\
+start\index.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\cli\build\bin\
+cli
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\expo\bin\cli
+Error: Cannot find 
+module 'ajv/dist/comp
+ile/codegen'
+Require stack:
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\ajv-keywords\dist\de
+finitions\typeof.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\ajv-keywords\dist\ke
+ywords\typeof.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\ajv-keywords\dist\ke
+ywords\index.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\ajv-keywords\dist\in
+dex.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\schema-utils\dist\va
+lidate.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\schema-utils\dist\in
+dex.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\expo-router\plugin\b
+uild\index.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\expo-router\app.plug
+in.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config-plugins
+\build\utils\plugin-r
+esolver.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config-plugins
+\build\plugins\withSt
+aticPlugin.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config-plugins
+\build\plugins\withPl
+ugins.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config-plugins
+\build\index.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config\build\p
+lugins\withConfigPlug
+ins.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config\build\C
+onfig.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\config\build\i
+ndex.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\cli\build\src\
+start\detectDevClient
+.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\cli\build\src\
+start\resolveOptions.
+js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\cli\build\src\
+start\index.js
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\@expo\cli\build\bin\
+cli
+- C:\Users\leida\.gem
+ini\antigravity\scrat
+ch\forge\node_modules
+\expo\bin\cli
+    at Function._reso
+lveFilename (node:int
+ernal/modules/cjs/loa
+der:1383:15)
+    at 
+defaultResolveImpl (n
+ode:internal/modules/
+cjs/loader:1025:19)
+    at resolveForCJSW
+ithHooks (node:intern
+al/modules/cjs/loader
+:1030:22)
+    at 
+Function._load (node:
+internal/modules/cjs/
+loader:1192:37)
+    at TracingChannel
+.traceSync (node:diag
+nostics_channel:322:1
+4)
+    at 
+wrapModuleLoad (node:
+internal/modules/cjs/
+loader:237:24)
+    at 
+Module.require (node:
+internal/modules/cjs/
+loader:1463:12)
+    at require (node:
+internal/modules/help
+ers:147:16)
+    at 
+Object.<anonymous> (C
+:\Users\leida\.gemini
+\antigravity\scratch\
+forge\node_modules\aj
+v-keywords\dist\defin
+itions\typeof.js:3:19
+)
+    at 
+Module._compile (node
+:internal/modules/cjs
+/loader:1706:14)
