@@ -2,11 +2,11 @@ import { AntiGravityEngine } from '@/components/skia/AntiGravityEngine';
 import { CrossroadsModal } from '@/components/ui/CrossroadsModal';
 import { GlassPane } from '@/components/ui/GlassPane';
 import { HabitList } from '@/components/ui/HabitList';
-import { useAuth } from '@/hooks/useAuth';
 import { useDecisions } from '@/hooks/useDecisions';
 import { useGamification } from '@/hooks/useGamification';
+import { useAuth } from '@/lib/providers/AuthProvider';
+import { haptics } from '@/services/haptics';
 import { Canvas, Fill } from '@shopify/react-native-skia';
-import * as Haptics from 'expo-haptics';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
 import { Alert, Text, TouchableOpacity, View } from 'react-native';
@@ -23,16 +23,16 @@ export default function Dashboard() {
     await logDecision(type, 'Dashboard Quick Decision');
 
     if (type === 'ANGEL') {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      haptics.success();
       Alert.alert('Ascension Initiated', '+10 Anti-Gravity Score');
     } else {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      haptics.error();
       Alert.alert('Gravity Increased', 'Entropy Detected');
     }
   };
 
   const handleOpenModal = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    haptics.medium();
     setModalVisible(true);
   };
 

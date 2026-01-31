@@ -1,38 +1,39 @@
-import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { Habit } from '@/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
 import { useAuth } from './useAuth';
-
-export interface Habit {
-    id: string;
-    title: string;
-    attribute: 'IRON' | 'FIRE' | 'STEEL' | 'FOCUS';
-    frequency: string[];
-    difficulty: number;
-}
 
 export function useHabits() {
     const { session } = useAuth();
     const [habits, setHabits] = useState<Habit[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchHabits = async () => {
+    useEffect(() => {
         if (!session?.user) return;
 
-        setLoading(true);
-        const { data, error } = await supabase
-            .from('habits')
-            .select('*')
-            .order('created_at', { ascending: false });
+        const CACHE_KEY = `habits_cache_${session.user.id}`;
 
-        if (error) {
-            console.error('Error fetching habits:', error);
-        } else {
-            setHabits(data as Habit[]);
-        }
-        setLoading(false);
-    };
+        const loadCache = async () => {
+            const cached = await AsyncStorage.getItem(CACHE_KEY);
+            if (cached) setHabits(JSON.parse(cached));
+        };
 
-    useEffect(() => {
+        const fetchHabits = async () => {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from('habits')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (!error && data) {
+                setHabits(data as Habit[]);
+                await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(data));
+            }
+            setLoading(false);
+        };
+
+        loadCache();
         fetchHabits();
     }, [session]);
 
@@ -45,14 +46,11 @@ export function useHabits() {
             .select()
             .single();
 
-        if (error) {
-            console.error('Error adding habit:', error);
-            throw error;
-        }
+        if (error) throw error;
 
         setHabits((prev) => [data as Habit, ...prev]);
         return data;
     };
 
-    return { habits, loading, fetchHabits, addHabit };
+    return { habits, loading, addHabit };
 }

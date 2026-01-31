@@ -1,13 +1,6 @@
-import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { useState } from 'react';
 import { useAuth } from './useAuth';
-
-export interface Decision {
-    id: string;
-    type: 'ANGEL' | 'APE';
-    context: string;
-    timestamp: string;
-}
 
 export function useDecisions() {
     const { session } = useAuth();

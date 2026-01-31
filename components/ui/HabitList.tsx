@@ -1,15 +1,12 @@
-import React, { useEffect } from 'react';
-import { View, Text } from 'react-native';
-import { useHabits, Habit } from '@/hooks/useHabits';
-import { GlassPane } from './GlassPane';
+import { useHabits } from '@/hooks/useHabits';
+import { Habit } from '@/types';
 import { FlashList } from '@shopify/flash-list';
+import React from 'react';
+import { Text, View } from 'react-native';
+import { GlassPane } from './GlassPane';
 
 export const HabitList = () => {
-    const { habits, fetchHabits, loading } = useHabits();
-
-    useEffect(() => {
-        fetchHabits();
-    }, []);
+    const { habits, loading } = useHabits();
 
     const renderItem = ({ item }: { item: Habit }) => (
         <GlassPane className="mb-3 p-4 rounded-xl flex-row justify-between items-center" opacity={0.03} blurAmount={5}>
