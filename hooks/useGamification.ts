@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { getProgressToNextLevel } from '@/lib/gamification';
 import { supabase } from '@/lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
 import { useAuth } from './useAuth';
-import { calculateLevel, getProgressToNextLevel } from '@/lib/gamification';
 
 export interface GamificationState {
     level: number;
@@ -22,7 +23,17 @@ export function useGamification() {
     useEffect(() => {
         if (!session?.user) return;
 
-        // Fetch initial stats
+        const CACHE_KEY = `gamification_cache_${session.user.id}`;
+
+        // Load from cache first for instant UI
+        const loadCache = async () => {
+            const cached = await AsyncStorage.getItem(CACHE_KEY);
+            if (cached) {
+                setStats(JSON.parse(cached));
+            }
+        };
+
+        // Fetch initial stats from Supabase
         const fetchStats = async () => {
             const { data, error } = await supabase
                 .from('profiles')
@@ -31,15 +42,18 @@ export function useGamification() {
                 .single();
 
             if (data) {
-                setStats({
+                const newState = {
                     level: data.level || 1,
                     xp: data.xp || 0,
                     antiGravityScore: data.anti_gravity_score || 0,
                     progress: getProgressToNextLevel(data.xp || 0),
-                });
+                };
+                setStats(newState);
+                await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(newState));
             }
         };
 
+        loadCache();
         fetchStats();
 
         // Subscribe to realtime updates
@@ -55,12 +69,14 @@ export function useGamification() {
                 },
                 (payload) => {
                     const newData = payload.new;
-                    setStats({
+                    const newState = {
                         level: newData.level,
                         xp: newData.xp,
                         antiGravityScore: newData.anti_gravity_score,
                         progress: getProgressToNextLevel(newData.xp),
-                    });
+                    };
+                    setStats(newState);
+                    AsyncStorage.setItem(CACHE_KEY, JSON.stringify(newState));
                 }
             )
             .subscribe();

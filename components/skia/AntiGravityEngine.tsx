@@ -1,7 +1,7 @@
+import { BlurMask, Canvas, Circle, Paint, RadialGradient, vec } from '@shopify/react-native-skia';
 import React, { useEffect } from 'react';
-import { Canvas, Circle, Paint, RadialGradient, vec, useClock, useValue, useComputedValue, BlurMask } from '@shopify/react-native-skia';
-import { useSharedValue, withRepeat, withTiming, Easing, useDerivedValue } from 'react-native-reanimated';
 import { Dimensions, View } from 'react-native';
+import { Easing, useDerivedValue, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 
 const { width, height } = Dimensions.get('window');
 const CENTER = vec(width / 2, height / 3);
@@ -19,28 +19,39 @@ interface AntiGravityEngineProps {
 export const AntiGravityEngine = ({ active = true, intensity = 0.5 }: AntiGravityEngineProps) => {
     const scale = useSharedValue(1);
     const opacity = useSharedValue(0.8);
+    const particles = Array.from({ length: 15 }).map(() => ({
+        x: Math.random() * width,
+        y: Math.random() * (height * 0.4),
+        r: Math.random() * 3 + 1,
+        speed: Math.random() * 0.5 + 0.2
+    }));
 
-    // Animation loop
     useEffect(() => {
         scale.value = withRepeat(
-            withTiming(1.2, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+            withTiming(1.05 + intensity * 0.2, { duration: 3000 / (0.5 + intensity), easing: Easing.inOut(Easing.ease) }),
             -1,
             true
         );
         opacity.value = withRepeat(
-            withTiming(0.4, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+            withTiming(0.4, { duration: 2500, easing: Easing.inOut(Easing.ease) }),
             -1,
             true
         );
-    }, []);
+    }, [intensity]);
 
-    const radius = useDerivedValue(() => {
-        return 80 * scale.value;
-    });
+    const radius = useDerivedValue(() => 80 * scale.value);
 
     return (
-        <View style={{ width: width, height: height * 0.6, alignItems: 'center', justifyContent: 'center' }}>
-            <Canvas style={{ flex: 1, width: width, height: height * 0.6 }}>
+        <View style={{ width: width, height: height * 0.5, alignItems: 'center', justifyContent: 'center' }}>
+            <Canvas style={{ flex: 1, width: width }}>
+                {/* Background Particles */}
+                {particles.map((p, i) => (
+                    <Circle key={i} cx={p.x} cy={p.y} r={p.r}>
+                        <Paint color={active ? CORE_COLOR : INACTIVE_COLOR} opacity={0.2} />
+                        <BlurMask blur={2} style="normal" />
+                    </Circle>
+                ))}
+
                 {/* Glow Effect */}
                 <Circle cx={CENTER.x} cy={CENTER.y} r={radius}>
                     <RadialGradient
@@ -48,15 +59,15 @@ export const AntiGravityEngine = ({ active = true, intensity = 0.5 }: AntiGravit
                         r={120}
                         colors={[active ? CORE_COLOR : INACTIVE_COLOR, 'transparent']}
                     />
-                    <BlurMask blur={20} style="normal" />
+                    <BlurMask blur={30} style="normal" />
                 </Circle>
 
                 {/* Core Sphere */}
                 <Circle cx={CENTER.x} cy={CENTER.y} r={60}>
                     <RadialGradient
-                        c={vec(CENTER.x - 20, CENTER.y - 20)}
+                        c={vec(CENTER.x - 15, CENTER.y - 15)}
                         r={80}
-                        colors={[active ? '#FFaaaa' : '#555', active ? CORE_COLOR : INACTIVE_COLOR, active ? OUTER_COLOR : '#111']}
+                        colors={[active ? '#FF5555' : '#555', active ? CORE_COLOR : INACTIVE_COLOR, active ? '#440000' : '#111']}
                     />
                 </Circle>
             </Canvas>

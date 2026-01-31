@@ -1,15 +1,16 @@
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { AntiGravityEngine } from '@/components/skia/AntiGravityEngine';
+import { CrossroadsModal } from '@/components/ui/CrossroadsModal';
 import { GlassPane } from '@/components/ui/GlassPane';
+import { HabitList } from '@/components/ui/HabitList';
+import { useAuth } from '@/hooks/useAuth';
+import { useDecisions } from '@/hooks/useDecisions';
+import { useGamification } from '@/hooks/useGamification';
+import { Canvas, Fill } from '@shopify/react-native-skia';
+import * as Haptics from 'expo-haptics';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
-import { CrossroadsModal } from '@/components/ui/CrossroadsModal';
-import { useDecisions } from '@/hooks/useDecisions';
-import { useAuth } from '@/hooks/useAuth';
-import { HabitList } from '@/components/ui/HabitList';
-import { useGamification } from '@/hooks/useGamification';
-import * as Haptics from 'expo-haptics';
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Dashboard() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -41,13 +42,21 @@ export default function Dashboard() {
 
       {/* Header */}
       <View className="px-6 py-4 flex-row justify-between items-center">
-        <View>
-          <Text className="text-gray-400 font-medium tracking-wide">PROTOCOL ACTIVE</Text>
-          <Text className="text-white text-2xl font-bold">Good Evening, {user?.email?.split('@')[0] || 'Initiate'}</Text>
+        <View className="flex-1">
+          <Text className="text-gray-400 font-medium tracking-widest text-[10px]">PROTOCOL ACTIVE • SYSTEM NOMINAL</Text>
+          <Text className="text-white text-2xl font-bold tracking-tight">Good Evening, {user?.email?.split('@')[0] || 'Initiate'}</Text>
         </View>
         <View className="items-end">
-          <Text className="text-magma font-bold text-lg">LVL {level}</Text>
-          <Text className="text-gray-500 text-xs">{xp} XP</Text>
+          <View className="flex-row items-baseline">
+            <Text className="text-magma font-black text-2xl">L{level}</Text>
+            <Text className="text-gray-500 text-xs ml-1">/99</Text>
+          </View>
+          <View className="w-20 h-1 bg-white/10 rounded-full mt-2 overflow-hidden">
+            <View
+              className="h-full bg-magma"
+              style={{ width: `${Math.max(5, (xp % 100))}%` }}
+            />
+          </View>
         </View>
       </View>
 
@@ -59,16 +68,27 @@ export default function Dashboard() {
       {/* Glass Panel */}
       <View className="px-6 pb-4">
         <GlassPane style={{ borderRadius: 24, padding: 20 }} opacity={0.05} blurAmount={20}>
-          <Text className="text-magma text-lg font-bold mb-2">GRAVITY SCORE: {antiGravityScore}</Text>
-          <Text className="text-white opacity-80 mb-4">
-            {antiGravityScore > 50 ? "System Stable. Orbit achiever." : "You are drifting. Execute protocol."}
-          </Text>
+          <View className="flex-row justify-between items-start mb-2">
+            <View>
+              <Text className="text-magma text-lg font-black tracking-tight">GRAVITY SCORE: {antiGravityScore}</Text>
+              <Text className="text-white/60 text-xs mb-4">
+                {antiGravityScore > 50 ? "System Stable. Orbit achieved." : "You are drifting. Execute protocol."}
+              </Text>
+            </View>
+            {/* Sparkline simulation */}
+            <View className="w-16 h-8 opacity-50">
+              <Canvas style={{ flex: 1 }}>
+                {/* Just a decorative line */}
+                <Fill color="transparent" />
+              </Canvas>
+            </View>
+          </View>
 
           <TouchableOpacity
-            className="bg-magma py-4 rounded-xl items-center shadow-lg shadow-magma/50"
+            className="bg-magma py-4 rounded-xl items-center shadow-lg shadow-magma/50 active:scale-95 transition-all"
             onPress={handleOpenModal}
           >
-            <Text className="text-white font-bold text-lg tracking-widest">FORGE HABIT</Text>
+            <Text className="text-white font-black text-lg tracking-widest">FORGE HABIT</Text>
           </TouchableOpacity>
         </GlassPane>
       </View>

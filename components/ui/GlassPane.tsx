@@ -1,20 +1,22 @@
+import { BackdropBlur, Canvas, Fill } from '@shopify/react-native-skia';
 import React from 'react';
-import { Canvas, BackdropBlur, Fill } from '@shopify/react-native-skia';
-import { View, StyleSheet, ViewProps } from 'react-native';
+import { StyleSheet, View, ViewProps } from 'react-native';
 
 interface GlassPaneProps extends ViewProps {
     blurAmount?: number;
     opacity?: number;
 }
 
-export const GlassPane = ({ blurAmount = 10, opacity = 0.1, style, children, ...props }: GlassPaneProps) => {
+export const GlassPane = ({ blurAmount = 15, opacity = 0.08, style, children, ...props }: GlassPaneProps) => {
     return (
         <View style={[styles.container, style]} {...props}>
             <Canvas style={StyleSheet.absoluteFill}>
                 <BackdropBlur blur={blurAmount} clip={undefined}>
-                    <Fill color={`rgba(255, 255, 255, ${opacity})`} />
+                    <Fill color={`rgba(30, 30, 30, ${opacity})`} />
                 </BackdropBlur>
             </Canvas>
+            {/* Subtle inner gloss highlight */}
+            <View style={[StyleSheet.absoluteFill, { borderColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderRadius: 24 }]} />
             {children}
         </View>
     );
