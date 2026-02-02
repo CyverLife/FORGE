@@ -32,6 +32,9 @@ export const useVisionBoard = () => {
                 const storedData = await AsyncStorage.getItem(VISION_STORAGE_KEY);
                 if (storedData) {
                     const { visions: savedVisions, currentId: savedCurrentId } = JSON.parse(storedData);
+                    console.log('🖼️ Vision Board - Loaded visions:', savedVisions.length);
+                    console.log('🖼️ Vision Board - Current ID:', savedCurrentId);
+                    console.log('🖼️ Vision Board - Sample URI:', savedVisions[0]?.uri);
                     setVisions(savedVisions);
                     setCurrentId(savedCurrentId);
                 }
@@ -108,6 +111,10 @@ export const useVisionBoard = () => {
                 rotation: Math.random() * 6 - 3, // -3 to +3
                 createdAt: Date.now(),
             };
+
+            console.log('🖼️ Vision Board - New vision created:');
+            console.log('   URI:', destUri);
+            console.log('   Title:', title);
 
             const updatedVisions = [...visions, newEntry];
             setVisions(updatedVisions);

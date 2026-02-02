@@ -12,6 +12,11 @@ export default function VisionScreen() {
     const { visions, currentVision, loading, addVision, deleteVision, selectVision, updateTitle } = useVisionBoard();
     const insets = useSafeAreaInsets();
 
+    // Debug: Log vision data
+    console.log('📱 VisionScreen - Visions count:', visions.length);
+    console.log('📱 VisionScreen - Current vision:', currentVision?.title);
+    console.log('📱 VisionScreen - Current vision URI:', currentVision?.uri);
+
     // State for Title Modal
     const [editingVisonId, setEditingVisionId] = useState<string | null>(null);
     const [tempTitle, setTempTitle] = useState('');
@@ -71,7 +76,14 @@ export default function VisionScreen() {
                         </View>
                         <TouchableOpacity
                             onPress={addVision}
-                            className="bg-forge-orange p-3 rounded-full shadow-lg shadow-orange-500/30 active:scale-95"
+                            className="bg-forge-orange p-3 rounded-full active:scale-95"
+                            style={{
+                                shadowColor: '#F97316',
+                                shadowOffset: { width: 0, height: 4 },
+                                shadowOpacity: 0.3,
+                                shadowRadius: 8,
+                                elevation: 8
+                            }}
                         >
                             <IconSymbol name="plus" size={24} color="black" />
                         </TouchableOpacity>
@@ -83,12 +95,26 @@ export default function VisionScreen() {
                             <Animated.View
                                 key={currentVision.id}
                                 entering={FadeIn.duration(400)}
-                                style={animatedMainStyle}
-                                className="w-full aspect-[4/5] rounded-[40px] overflow-hidden border border-white/10 shadow-2xl shadow-black/80"
+                                style={[
+                                    animatedMainStyle,
+                                    {
+                                        width: '100%',
+                                        aspectRatio: 4 / 5,
+                                        borderRadius: 40,
+                                        overflow: 'hidden',
+                                        borderWidth: 1,
+                                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                                        shadowColor: '#000',
+                                        shadowOffset: { width: 0, height: 20 },
+                                        shadowOpacity: 0.8,
+                                        shadowRadius: 25,
+                                        elevation: 24
+                                    }
+                                ]}
                             >
                                 <Image
                                     source={{ uri: currentVision.uri }}
-                                    className="flex-1"
+                                    style={{ flex: 1, width: '100%' }}
                                     contentFit="cover"
                                     transition={500}
                                 />
@@ -137,14 +163,29 @@ export default function VisionScreen() {
                                             onPress={() => handleSelect(vision.id, vision.rotation)}
                                             onLongPress={() => deleteVision(vision.id)}
                                             activeOpacity={0.8}
-                                            style={{
-                                                transform: [{ rotate: `${vision.rotation}deg` }]
-                                            }}
-                                            className={`aspect-[3/4] rounded-2xl overflow-hidden border-2 ${isSelected ? 'border-forge-orange shadow-lg shadow-orange-500/40' : 'border-white/10'}`}
+                                            style={[
+                                                {
+                                                    aspectRatio: 3 / 4,
+                                                    borderRadius: 16,
+                                                    overflow: 'hidden',
+                                                    borderWidth: 2,
+                                                    transform: [{ rotate: `${vision.rotation}deg` }]
+                                                },
+                                                isSelected ? {
+                                                    borderColor: '#F97316',
+                                                    shadowColor: '#F97316',
+                                                    shadowOffset: { width: 0, height: 4 },
+                                                    shadowOpacity: 0.4,
+                                                    shadowRadius: 8,
+                                                    elevation: 8
+                                                } : {
+                                                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                                                }
+                                            ]}
                                         >
                                             <Image
                                                 source={{ uri: vision.uri }}
-                                                className="flex-1"
+                                                style={{ flex: 1, width: '100%', height: '100%' }}
                                                 contentFit="cover"
                                                 transition={300}
                                             />
