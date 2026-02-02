@@ -21,18 +21,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
+        console.log("AUTH: Obteniendo sesión inicial...");
         supabase.auth.getSession().then(({ data: { session } }) => {
+            console.log("AUTH: Sesión obtenida:", session ? "Sí" : "No");
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
-            SplashScreen.hideAsync();
+            SplashScreen.hideAsync().catch(() => { });
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            console.log("AUTH: Cambio de estado:", _event);
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
-            SplashScreen.hideAsync();
+            SplashScreen.hideAsync().catch(() => { });
         });
 
         return () => subscription.unsubscribe();

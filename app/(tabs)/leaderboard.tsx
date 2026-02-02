@@ -1,18 +1,21 @@
 import { GradientBackground } from '@/components/ui/GradientBackground';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { SkiaGlassPane } from '@/components/ui/SkiaGlassPane';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 import { FRAMES } from '@/constants/frames';
 import { useAuth } from '@/hooks/useAuth';
 import { useGamification } from '@/hooks/useGamification';
-import { Image } from 'expo-image';
 import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function LeaderboardScreen() {
     const { user } = useAuth();
     const { level, xp, consciousnessRank, streak } = useGamification();
+    const insets = useSafeAreaInsets();
+
+    // ... existing code ...
 
     // Get current frame
     const currentFrameId = user?.user_metadata?.frame_id || 'default';
@@ -31,12 +34,12 @@ export default function LeaderboardScreen() {
     const colors = getRankColors(consciousnessRank);
 
     return (
-        <SafeAreaView className="flex-1 bg-deep-black">
+        <View style={{ flex: 1, backgroundColor: '#09090B', paddingTop: insets.top }}>
             <GradientBackground>
                 {/* Header */}
                 <Animated.View
                     entering={FadeInDown.duration(600).springify()}
-                    className="pt-4 pb-6 px-4 border-b border-white/5 bg-black/20"
+                    className="pt-12 pb-6 px-4 border-b border-white/5 bg-black/20"
                 >
                     <View className="flex-row items-center justify-between">
                         <View className="flex-row items-center gap-3">
@@ -48,7 +51,7 @@ export default function LeaderboardScreen() {
                                 <Text className={`text-xs font-bold ${colors.text} tracking-widest`}>TEMPORADA 1</Text>
                             </View>
                         </View>
-                        <View className="bg-white/5 py-1 px-3 rounded-full border border-white/10">
+                        <View className="bg-white/5 py-1 px-3 rounded-full border border-white/10 mt-2">
                             <Text className="text-white/70 text-[10px] font-bold">GLOBAL</Text>
                         </View>
                     </View>
@@ -98,26 +101,11 @@ export default function LeaderboardScreen() {
 
                                     {/* Avatar & Frame */}
                                     <View className="items-center justify-center relative mb-4">
-                                        {/* Frame Image */}
-                                        {currentFrame?.image && (
-                                            <Image
-                                                source={currentFrame.image}
-                                                style={{ width: 140, height: 140, position: 'absolute', zIndex: 10 }} // Increased size for prominence
-                                                contentFit="contain"
-                                            />
-                                        )}
-
-                                        {/* Avatar Image */}
-                                        <View className="w-24 h-24 rounded-2xl overflow-hidden bg-black/40 border-2 border-white/10">
-                                            <Image
-                                                source={user?.user_metadata?.avatar_url
-                                                    ? { uri: user.user_metadata.avatar_url }
-                                                    : require('@/assets/images/simio_angel_concept.png')
-                                                }
-                                                style={{ width: '100%', height: '100%' }}
-                                                contentFit="cover"
-                                            />
-                                        </View>
+                                        <UserAvatar
+                                            url={user?.user_metadata?.avatar_url}
+                                            frame={currentFrame}
+                                            size={140}
+                                        />
 
                                         {/* Rank Badge Indicator */}
                                         <View className={`absolute -bottom-3 bg-[#0E0E0E] px-3 py-1 rounded-lg border ${colors.border} z-20`}>
@@ -165,6 +153,6 @@ export default function LeaderboardScreen() {
 
                 </ScrollView>
             </GradientBackground>
-        </SafeAreaView>
+        </View>
     );
 }

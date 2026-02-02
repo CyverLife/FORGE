@@ -10,6 +10,8 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { GradientBackground } from '@/components/ui/GradientBackground';
+import { UserAvatar } from '@/components/ui/UserAvatar';
+import { BADGES } from '@/constants/badges';
 import { FRAMES, Frame } from '@/constants/frames';
 import { useToast } from '@/context/ToastContext';
 import { useGamification } from '@/hooks/useGamification';
@@ -240,31 +242,12 @@ export default function SettingsScreen() {
                         {/* Profile Section */}
                         <Animated.View entering={FadeInDown.springify()} className="items-center mb-10 w-full">
                             <TouchableOpacity onPress={handlePickImage} disabled={uploading}>
-                                <View className="w-32 h-32 bg-card-black items-center justify-center relative">
-                                    {user?.user_metadata?.avatar_url ? (
-                                        <Image
-                                            source={{ uri: user.user_metadata.avatar_url }}
-                                            style={{ width: '90%', height: '90%' }}
-                                            contentFit="cover"
-                                            cachePolicy="none"
-                                        />
-                                    ) : (
-                                        <Image
-                                            source={require('@/assets/images/simio_angel_concept.png')}
-                                            style={{ width: '90%', height: '90%' }}
-                                            contentFit="cover"
-                                        />
-                                    )}
-
-                                    {/* Frame Overlay */}
-                                    {currentFrame?.image && (
-                                        <Image
-                                            source={currentFrame.image}
-                                            style={{ position: 'absolute', top: '-7.5%', left: '-7.5%', width: '115%', height: '115%', zIndex: 10 }}
-                                            contentFit="contain"
-                                        />
-                                    )}
-
+                                <View className="items-center justify-center relative">
+                                    <UserAvatar
+                                        url={user?.user_metadata?.avatar_url}
+                                        frame={currentFrame}
+                                        size={128}
+                                    />
                                     {uploading && (
                                         <View className="absolute inset-0 bg-black/50 items-center justify-center">
                                             <ActivityIndicator color="#F97316" />
@@ -311,35 +294,62 @@ export default function SettingsScreen() {
                                 <Text className="text-white font-bold ml-2">Personalizar Marco</Text>
                             </TouchableOpacity>
 
-                            {/* Badges Section */}
+                            {/* Badges Section (Standard) */}
                             <View className="w-full mb-8">
                                 <View className="flex-row items-center justify-between mb-4">
                                     <Text className="text-gray-500 font-bold text-xs uppercase tracking-widest">INSIGNIAS DISPONIBLES</Text>
-                                    <Text className="text-forge-orange text-[10px] font-bold uppercase">Toque para equipar ({user?.user_metadata?.selected_badges?.length || 0}/3)</Text>
+                                    <Text className="text-forge-orange text-[10px] font-bold uppercase">
+                                        Equipadas ({user?.user_metadata?.selected_badges?.filter((id: string) => !BADGES.find(b => b.id === id)?.type.match(/RANK|MASTERY/))?.length || 0}/3)
+                                    </Text>
                                 </View>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false} className="gap-x-4">
-                                    {[
-                                        { name: 'Founder', img: require('@/assets/images/badge_founder.png') },
-                                        { name: 'Architect', img: require('@/assets/images/badge_architect.png') },
-                                        { name: 'Beta Tester', img: require('@/assets/images/badge_beta_tester.png') },
-                                        { name: 'Recovery', img: require('@/assets/images/badge_recovery.png') },
-                                        { name: 'Silent Streak', img: require('@/assets/images/badge_silent_streak.png') },
-                                        { name: 'Racha', img: require('@/assets/images/badge_streak_fire.png') },
-                                        { name: 'Bronce', img: require('@/assets/images/rank_bronze.png') },
-                                        { name: 'Infinito', img: require('@/assets/images/rank_infinite.png') },
-                                    ].map((badge, index) => {
-                                        const isSelected = (user?.user_metadata?.selected_badges || []).includes(badge.name);
+                                    {BADGES.filter(b => b.type !== 'MASTERY' && b.type !== 'RANK').map((badge, index) => {
+                                        const isSelected = (user?.user_metadata?.selected_badges || []).includes(badge.id);
+                                        const isLocked = badge.unlockCondition.type === 'streak' ? streak < (badge.unlockCondition.value as number) : false;
+
                                         return (
                                             <TouchableOpacity
                                                 key={index}
-                                                className="items-center mr-4"
-                                                onPress={() => toggleBadge(badge.name)}
+                                                className={`items-center mr-4 ${isLocked ? 'opacity-50' : ''}`}
+                                                onPress={() => !isLocked && toggleBadge(badge.id)}
+                                                disabled={isLocked}
                                             >
                                                 <View className={`w-16 h-16 rounded-lg items-center justify-center border mb-2 ${isSelected ? 'bg-forge-orange/20 border-forge-orange' : 'bg-white/5 border-white/10'}`}>
-                                                    <Image source={badge.img} style={{ width: '80%', height: '80%' }} contentFit="contain" />
+                                                    <Image source={badge.image} style={{ width: '80%', height: '80%' }} contentFit="contain" />
                                                 </View>
-                                                <Text className={`text-[10px] uppercase font-bold text-center w-20 ${isSelected ? 'text-forge-orange' : 'text-gray-400'}`} numberOfLines={1}>{badge.name}</Text>
+                                                <Text className={`text-[10px] uppercase font-bold text-center w-20 ${isSelected ? 'text-forge-orange' : 'text-gray-400'}`} numberOfLines={1}>{badge.label}</Text>
+                                                {isLocked && <IconSymbol name="lock.fill" size={12} color="#666" style={{ position: 'absolute', top: 4, right: 4 }} />}
                                             </TouchableOpacity>
+                                        );
+                                    })}
+                                </ScrollView>
+                            </View>
+
+                            {/* Ranks Section (Visual Only - Auto Equipped) */}
+                            <View className="w-full mb-8">
+                                <Text className="text-gray-500 font-bold text-xs uppercase tracking-widest mb-4">RANGOS ALCANZADOS</Text>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="gap-x-4">
+                                    {BADGES.filter(b => b.type === 'RANK').map((rankBadge, index) => {
+                                        // Rank is determined by global state
+                                        const rankKey = rankBadge.id.replace('badge_', '').toUpperCase(); // 'badge_bronze' -> 'BRONZE'
+                                        const currentRank = (user?.user_metadata?.consciousness_rank || 'BRONZE').toUpperCase();
+
+                                        const isCurrentRank = currentRank === rankKey;
+                                        // Also we can check if this rank is "unlocked" (i.e. if current rank is higher or equal)
+                                        // But for now, let's just focus on highlighting the ACTIVE one.
+
+                                        return (
+                                            <View
+                                                key={index}
+                                                className={`items-center mr-4 ${!isCurrentRank ? 'opacity-30' : 'opacity-100'}`}
+                                            >
+                                                <View className={`w-28 h-16 bg-white/5 rounded-lg items-center justify-center border mb-2 ${isCurrentRank ? 'bg-forge-orange/20 border-forge-orange shadow-lg shadow-orange-500/20' : 'border-white/10'}`}>
+                                                    <Image source={rankBadge.image} style={{ width: '90%', height: '90%' }} contentFit="contain" />
+                                                </View>
+                                                <Text className={`text-[10px] uppercase font-bold ${isCurrentRank ? 'text-forge-orange' : 'text-gray-600'}`}>
+                                                    {isCurrentRank ? 'ACTUAL' : rankBadge.label.replace('Rango ', '')}
+                                                </Text>
+                                            </View>
                                         );
                                     })}
                                 </ScrollView>
@@ -347,31 +357,37 @@ export default function SettingsScreen() {
 
                             {/* Masteries Section */}
                             <View className="w-full mb-8">
-                                <Text className="text-gray-500 font-bold text-xs uppercase tracking-widest mb-4">MAESTRIAS</Text>
+                                <Text className="text-gray-500 font-bold text-xs uppercase tracking-widest mb-4">MAESTRÍAS</Text>
                                 <ScrollView horizontal showsHorizontalScrollIndicator={false} className="gap-x-4">
-                                    {[1, 2, 3, 4].map((num) => (
-                                        <View key={num} className="items-center mr-4">
-                                            <View className="w-20 h-24 bg-white/5 rounded-lg items-center justify-center border border-white/10 mb-2">
-                                                {/* Using dynamic require is tricky in Expo, better to static require if possible, but fallback to try/catch or known names. 
-                                                    Since I know I copied them as badge_mastery_X.png, I will reference them directly if possible.
-                                                    Actually, dynamic require using variables is not fully supported in Metro.
-                                                    I will hardcode a few common ones or use a switch if I had to.
-                                                    Wait, I can just create an array of requires.
-                                                  */}
-                                                <Image
-                                                    source={
-                                                        num === 1 ? require('@/assets/images/badge_mastery_1.png') :
-                                                            num === 2 ? require('@/assets/images/badge_mastery_2.png') :
-                                                                num === 3 ? require('@/assets/images/badge_mastery_3.png') :
-                                                                    require('@/assets/images/badge_mastery_4.png')
-                                                    }
-                                                    style={{ width: '90%', height: '90%' }}
-                                                    contentFit="contain"
-                                                />
-                                            </View>
-                                            <Text className="text-gray-400 text-[10px] uppercase font-bold">Nivel {num}</Text>
-                                        </View>
-                                    ))}
+                                    {/* ... existing masteries logic matches ... */}
+                                    {BADGES.filter(b => b.type === 'MASTERY').map((mastery, index) => {
+                                        const isSelected = (user?.user_metadata?.selected_badges || []).includes(mastery.id);
+                                        const isLocked = level < (mastery.unlockCondition.value as number);
+
+                                        return (
+                                            <TouchableOpacity
+                                                key={index}
+                                                className={`items-center mr-4 ${isLocked ? 'opacity-50' : ''}`}
+                                                onPress={() => !isLocked && toggleBadge(mastery.id)}
+                                                disabled={isLocked}
+                                            >
+                                                <View className={`w-20 h-24 bg-white/5 rounded-lg items-center justify-center border mb-2 ${isSelected ? 'bg-forge-orange/10 border-forge-orange' : 'border-white/10'}`}>
+                                                    <Image
+                                                        source={mastery.image}
+                                                        style={{ width: '90%', height: '90%' }}
+                                                        contentFit="contain"
+                                                    />
+                                                </View>
+                                                <Text className={`text-[10px] uppercase font-bold ${isSelected ? 'text-forge-orange' : 'text-gray-400'}`}>{mastery.label}</Text>
+                                                {isLocked && (
+                                                    <View className="absolute inset-0 items-center justify-center bg-black/60 rounded-lg">
+                                                        <IconSymbol name="lock.fill" size={20} color="#9CA3AF" />
+                                                        <Text className="text-white text-[8px] font-bold mt-1">Nvl. {mastery.unlockCondition.value}</Text>
+                                                    </View>
+                                                )}
+                                            </TouchableOpacity>
+                                        );
+                                    })}
                                 </ScrollView>
                             </View>
                         </Animated.View>
@@ -490,21 +506,12 @@ export default function SettingsScreen() {
                                                 className={`w-[48%] bg-white/5 rounded-2xl p-4 border ${isSelected ? 'border-forge-orange bg-forge-orange/10' : 'border-white/5'} ${isLocked ? 'opacity-50' : 'opacity-100'}`}
                                             >
                                                 <View className="items-center mb-3 relative">
-                                                    <View className="w-20 h-20 bg-black/40 rounded-xl overflow-hidden items-center justify-center border border-white/10">
-                                                        {frame.image ? (
-                                                            <Image source={frame.image} style={{ width: '100%', height: '100%' }} contentFit="contain" />
-                                                        ) : (
-                                                            <Text className="text-white/20 text-xs">Sin Marco</Text>
-                                                        )}
-
-                                                        {/* Preview user avatar inside if unlocked */}
-                                                        {!isLocked && user?.user_metadata?.avatar_url && (
-                                                            <Image
-                                                                source={{ uri: user.user_metadata.avatar_url }}
-                                                                style={{ position: 'absolute', width: '80%', height: '80%', borderRadius: 12, zIndex: -1 }}
-                                                                contentFit="cover"
-                                                            />
-                                                        )}
+                                                    <View className="items-center justify-center">
+                                                        <UserAvatar
+                                                            url={!isLocked ? user?.user_metadata?.avatar_url : null}
+                                                            frame={frame}
+                                                            size={80}
+                                                        />
                                                     </View>
                                                     {isLocked && (
                                                         <View className="absolute inset-0 items-center justify-center bg-black/60 rounded-xl">

@@ -1,3 +1,4 @@
+import { GradientBackground } from '@/components/ui/GradientBackground';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -50,59 +51,62 @@ export default function SplashScreen() {
     }));
 
     return (
-        <View className="flex-1 bg-deep-black items-center justify-center">
-            {/* Premium Grid Background - Heroes Academy Style */}
-            <Animated.View style={[{ position: 'absolute', width: '100%', height: '100%' }, gridStyle]}>
-                {/* Vertical Lines */}
-                {Array.from({ length: 8 }).map((_, i) => (
-                    <View
-                        key={`v-${i}`}
-                        style={{
-                            position: 'absolute',
-                            left: `${(i + 1) * 12.5}%`,
-                            top: 0,
-                            bottom: 0,
-                            width: 1,
-                            backgroundColor: 'rgba(255,255,255,0.05)'
-                        }}
-                    />
-                ))}
-                {/* Horizontal Lines */}
-                {Array.from({ length: 12 }).map((_, i) => (
-                    <View
-                        key={`h-${i}`}
-                        style={{
-                            position: 'absolute',
-                            top: `${(i + 1) * 8.33}%`,
-                            left: 0,
-                            right: 0,
-                            height: 1,
-                            backgroundColor: 'rgba(255,255,255,0.05)'
-                        }}
-                    />
-                ))}
-            </Animated.View>
+        <GradientBackground>
+            <View className="flex-1 items-center justify-center">
+                {/* Premium Grid Background - Heroes Academy Style */}
+                <Animated.View style={[{ position: 'absolute', width: '100%', height: '100%' }, gridStyle]}>
+                    {/* Vertical Lines */}
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <View
+                            key={`v-${i}`}
+                            style={{
+                                position: 'absolute',
+                                left: `${(i + 1) * 12.5}%`,
+                                top: 0,
+                                bottom: 0,
+                                width: 1,
+                                backgroundColor: 'rgba(255,255,255,0.05)'
+                            }}
+                        />
+                    ))}
+                    {/* Horizontal Lines */}
+                    {Array.from({ length: 12 }).map((_, i) => (
+                        <View
+                            key={`h-${i}`}
+                            style={{
+                                position: 'absolute',
+                                top: `${(i + 1) * 8.33}%`,
+                                left: 0,
+                                right: 0,
+                                height: 1,
+                                backgroundColor: 'rgba(255,255,255,0.05)'
+                            }}
+                        />
+                    ))}
+                </Animated.View>
 
-            {/* Logo */}
-            <Animated.View style={logoStyle} className="items-center">
-                <Image
-                    source={require('@/assets/images/forge_logo_final.png')}
-                    style={{ width: 280, height: 140 }}
-                    contentFit="contain"
-                />
-            </Animated.View>
+                {/* Logo */}
+                <Animated.View style={logoStyle} className="items-center">
+                    <Image
+                        source={require('@/assets/images/forge_logo_final.png')}
+                        style={{ width: 280, height: 140 }}
+                        contentFit="contain"
+                        transition={300}
+                    />
+                </Animated.View>
 
-            {/* Subtitle */}
-            <Animated.View style={textStyle} className="absolute bottom-24 items-center">
-                <View className="flex-row items-center gap-2 mb-2">
-                    <View className="w-8 h-[1px] bg-forge-orange" />
-                    <IconSymbol name="flame.fill" size={12} color="#F97316" />
-                    <View className="w-8 h-[1px] bg-forge-orange" />
-                </View>
-                <Text className="text-text-secondary text-xs uppercase tracking-[4px] font-bold">
-                    FORJANDO TU DESTINO
-                </Text>
-            </Animated.View>
-        </View>
+                {/* Subtitle */}
+                <Animated.View style={textStyle} className="absolute bottom-24 items-center">
+                    <View className="flex-row items-center gap-2 mb-2">
+                        <View className="w-8 h-[1px] bg-forge-orange" />
+                        <IconSymbol name="flame.fill" size={12} color="#F97316" />
+                        <View className="w-8 h-[1px] bg-forge-orange" />
+                    </View>
+                    <Text className="text-text-secondary text-xs uppercase tracking-[4px] font-bold">
+                        FORJANDO TU DESTINO
+                    </Text>
+                </Animated.View>
+            </View>
+        </GradientBackground>
     );
 }

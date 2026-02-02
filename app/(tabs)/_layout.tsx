@@ -21,9 +21,15 @@ export default function TabLayout() {
             backgroundColor: '#0E0E0E',
             borderTopWidth: 1,
             borderTopColor: '#2A2A2A',
-            height: 60,
-            paddingBottom: 8,
-            paddingTop: 8,
+            height: 90,
+            paddingBottom: 30,
+            paddingTop: 10,
+            elevation: 0,
+          },
+          tabBarLabelStyle: {
+            fontSize: 10,
+            fontWeight: 'bold',
+            marginTop: 4,
           },
         }}>
         <Tabs.Screen
@@ -45,6 +51,13 @@ export default function TabLayout() {
           options={{
             title: 'ESTADÍSTICAS',
             tabBarIcon: ({ color }) => <IconSymbol size={24} name="chart.bar.fill" color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="vision"
+          options={{
+            title: 'VISIÓN',
+            tabBarIcon: ({ color }) => <IconSymbol size={24} name="photo.stack.fill" color={color} />,
           }}
         />
         <Tabs.Screen

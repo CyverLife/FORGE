@@ -46,7 +46,7 @@ export const pickImageFromLibrary = async (aspect: [number, number] = [4, 3]) =>
         }
 
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true, // Allow cropping for better layout fitting
             aspect: aspect, // Use passed aspect ratio
             quality: 0.5, // Compress for speed

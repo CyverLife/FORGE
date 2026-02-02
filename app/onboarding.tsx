@@ -1,4 +1,6 @@
+import { GradientBackground } from '@/components/ui/GradientBackground';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { SkiaGlassPane } from '@/components/ui/SkiaGlassPane';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
@@ -53,105 +55,117 @@ export default function OnboardingScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-deep-black">
-            {/* Premium Grid Background */}
-            <View style={{ position: 'absolute', width: '100%', height: '100%' }}>
-                {/* Vertical Lines */}
-                {Array.from({ length: 8 }).map((_, i) => (
-                    <View
-                        key={`v-${i}`}
-                        style={{
-                            position: 'absolute',
-                            left: `${(i + 1) * 12.5}%`,
-                            top: 0,
-                            bottom: 0,
-                            width: 1,
-                            backgroundColor: 'rgba(255,255,255,0.03)'
-                        }}
-                    />
-                ))}
-                {/* Horizontal Lines */}
-                {Array.from({ length: 12 }).map((_, i) => (
-                    <View
-                        key={`h-${i}`}
-                        style={{
-                            position: 'absolute',
-                            top: `${(i + 1) * 8.33}%`,
-                            left: 0,
-                            right: 0,
-                            height: 1,
-                            backgroundColor: 'rgba(255,255,255,0.03)'
-                        }}
-                    />
-                ))}
-            </View>
-
-            {/* Skip Button */}
-            <View className="absolute top-12 right-6 z-10">
-                <TouchableOpacity onPress={handleSkip} className="active:scale-97">
-                    <Text className="text-text-secondary text-sm font-bold uppercase tracking-wider">
-                        SALTAR
-                    </Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Card Content */}
-            <View className="flex-1 justify-center items-center px-8">
-                <Animated.View
-                    key={currentIndex}
-                    entering={FadeInRight.springify()}
-                    exiting={FadeOutLeft.springify()}
-                    className="items-center"
-                >
-                    {/* Icon */}
-                    <View
-                        className="w-32 h-32 rounded-premium items-center justify-center mb-8"
-                        style={{ backgroundColor: `${currentCard.color}15` }}
-                    >
-                        <IconSymbol name={currentCard.icon as any} size={64} color={currentCard.color} />
-                    </View>
-
-                    {/* Title */}
-                    <Text
-                        className="text-text-primary font-black text-4xl text-center mb-6 font-display leading-tight"
-                        style={{ letterSpacing: 2 }}
-                    >
-                        {currentCard.title}
-                    </Text>
-
-                    {/* Description */}
-                    <Text className="text-text-secondary text-center text-lg leading-relaxed max-w-sm">
-                        {currentCard.description}
-                    </Text>
-                </Animated.View>
-            </View>
-
-            {/* Bottom Section */}
-            <View className="px-8 pb-8">
-                {/* Progress Dots */}
-                <View className="flex-row justify-center gap-2 mb-8">
-                    {ONBOARDING_CARDS.map((_, index) => (
+            <GradientBackground>
+                {/* Premium Grid Background */}
+                <View className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-30">
+                    {Array.from({ length: 8 }).map((_, i) => (
                         <View
-                            key={index}
-                            className="h-2 rounded-full"
+                            key={`v-${i}`}
                             style={{
-                                width: index === currentIndex ? 24 : 8,
-                                backgroundColor: index === currentIndex ? '#F97316' : '#2A2A2A',
+                                position: 'absolute',
+                                left: `${(i + 1) * 12.5}%`,
+                                top: 0,
+                                bottom: 0,
+                                width: 1,
+                                backgroundColor: 'rgba(255,255,255,0.03)'
+                            }}
+                        />
+                    ))}
+                    {Array.from({ length: 12 }).map((_, i) => (
+                        <View
+                            key={`h-${i}`}
+                            style={{
+                                position: 'absolute',
+                                top: `${(i + 1) * 8.33}%`,
+                                left: 0,
+                                right: 0,
+                                height: 1,
+                                backgroundColor: 'rgba(255,255,255,0.03)'
                             }}
                         />
                     ))}
                 </View>
 
-                {/* CTA Button */}
-                <TouchableOpacity
-                    onPress={handleNext}
-                    className="bg-forge-orange py-4 rounded-premium active:scale-97"
-                    style={{ elevation: 8, shadowColor: '#F97316', shadowOpacity: 0.3, shadowRadius: 12 }}
-                >
-                    <Text className="text-deep-black font-black text-center text-lg uppercase tracking-widest">
-                        {isLastCard ? 'COMENZAR MI TRANSFORMACIÓN' : 'SIGUIENTE'}
-                    </Text>
-                </TouchableOpacity>
-            </View>
+                {/* Skip Button */}
+                <View className="absolute top-12 right-6 z-10">
+                    <TouchableOpacity onPress={handleSkip} className="active:scale-97">
+                        <Text className="text-text-secondary text-sm font-bold uppercase tracking-wider">
+                            SALTAR
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Card Content - Now with SkiaGlassPane integration */}
+                <View className="flex-1 justify-center items-center px-4">
+                    <Animated.View
+                        key={currentIndex}
+                        entering={FadeInRight.springify()}
+                        exiting={FadeOutLeft.springify()}
+                        className="items-center w-full"
+                    >
+                        <SkiaGlassPane
+                            height={420}
+                            cornerRadius={32}
+                            backgroundColor="rgba(20, 20, 23, 0.4)"
+                            borderColor="rgba(255, 255, 255, 0.08)"
+                        >
+                            <View className="flex-1 items-center justify-center p-8">
+                                {/* Icon */}
+                                <View
+                                    className="w-24 h-24 rounded-3xl items-center justify-center mb-8"
+                                    style={{
+                                        backgroundColor: `${currentCard.color}15`,
+                                        borderWidth: 1,
+                                        borderColor: `${currentCard.color}30`
+                                    }}
+                                >
+                                    <IconSymbol name={currentCard.icon as any} size={48} color={currentCard.color} />
+                                </View>
+
+                                {/* Title */}
+                                <Text
+                                    className="text-white font-black text-3xl text-center mb-4 font-display leading-tight uppercase"
+                                    style={{ letterSpacing: 2 }}
+                                >
+                                    {currentCard.title}
+                                </Text>
+
+                                {/* Description */}
+                                <Text className="text-gray-400 text-center text-sm leading-6 font-medium">
+                                    {currentCard.description}
+                                </Text>
+                            </View>
+                        </SkiaGlassPane>
+                    </Animated.View>
+                </View>
+
+                {/* Bottom Section */}
+                <View className="px-8 pb-12">
+                    {/* Progress Dots */}
+                    <View className="flex-row justify-center gap-2 mb-8">
+                        {ONBOARDING_CARDS.map((_, index) => (
+                            <View
+                                key={index}
+                                className="h-2 rounded-full"
+                                style={{
+                                    width: index === currentIndex ? 24 : 8,
+                                    backgroundColor: index === currentIndex ? '#F97316' : 'rgba(255,255,255,0.1)',
+                                }}
+                            />
+                        ))}
+                    </View>
+
+                    {/* CTA Button */}
+                    <TouchableOpacity
+                        onPress={handleNext}
+                        className="bg-forge-orange py-4 rounded-premium active:scale-97 shadow-lg shadow-orange-500/20"
+                    >
+                        <Text className="text-deep-black font-black text-center text-sm uppercase tracking-widest">
+                            {isLastCard ? 'COMENZAR MI TRANSFORMACIÓN' : 'SIGUIENTE'}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            </GradientBackground>
         </SafeAreaView>
     );
 }

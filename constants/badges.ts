@@ -7,7 +7,7 @@ export interface Badge {
         value: number | string;
     };
     description: string;
-    type: 'STREAK' | 'RANK' | 'SPECIAL';
+    type: 'STREAK' | 'RANK' | 'SPECIAL' | 'MASTERY';
 }
 
 export const BADGES: Badge[] = [
@@ -15,7 +15,7 @@ export const BADGES: Badge[] = [
     {
         id: 'streak_7',
         label: 'Semana de Fuego',
-        image: require('@/assets/badges/streak_7.png'),
+        image: require('@/assets/images/streak_7.png'),
         unlockCondition: { type: 'streak', value: 7 },
         description: 'Has mantenido el hábito por 7 días.',
         type: 'STREAK'
@@ -23,7 +23,7 @@ export const BADGES: Badge[] = [
     {
         id: 'streak_30',
         label: 'Mes de Disciplina',
-        image: require('@/assets/badges/streak_30.png'),
+        image: require('@/assets/images/streak_30.png'),
         unlockCondition: { type: 'streak', value: 30 },
         description: '30 días de constancia inquebrantable.',
         type: 'STREAK'
@@ -31,7 +31,7 @@ export const BADGES: Badge[] = [
     {
         id: 'streak_100',
         label: 'Centurión',
-        image: require('@/assets/badges/streak_100.png'),
+        image: require('@/assets/images/streak_100.png'),
         unlockCondition: { type: 'streak', value: 100 },
         description: '100 días forjando tu destino.',
         type: 'STREAK'
@@ -39,7 +39,7 @@ export const BADGES: Badge[] = [
     {
         id: 'streak_eternal',
         label: 'Llama Eterna',
-        image: require('@/assets/badges/streak_eternal.png'),
+        image: require('@/assets/images/streak_eternal.png'),
         unlockCondition: { type: 'streak', value: 365 },
         description: 'Un año de luz inextinguible.',
         type: 'STREAK'
@@ -48,7 +48,7 @@ export const BADGES: Badge[] = [
     {
         id: 'badge_bronze',
         label: 'Rango Bronce',
-        image: require('@/assets/badges/rank_bronze_badge.png'),
+        image: require('@/assets/images/rank_bronze.png'),
         unlockCondition: { type: 'rank', value: 'BRONZE' },
         description: 'Inicio del camino.',
         type: 'RANK'
@@ -56,7 +56,7 @@ export const BADGES: Badge[] = [
     {
         id: 'badge_silver',
         label: 'Rango Plata',
-        image: require('@/assets/badges/rank_silver_badge.png'),
+        image: require('@/assets/images/rank_silver.png'),
         unlockCondition: { type: 'rank', value: 'SILVER' },
         description: 'Progreso sólido.',
         type: 'RANK'
@@ -64,7 +64,7 @@ export const BADGES: Badge[] = [
     {
         id: 'badge_gold',
         label: 'Rango Oro',
-        image: require('@/assets/badges/rank_gold_badge.png'),
+        image: require('@/assets/images/rank_gold.png'),
         unlockCondition: { type: 'rank', value: 'GOLD' },
         description: 'Excelencia demostrada.',
         type: 'RANK'
@@ -72,9 +72,42 @@ export const BADGES: Badge[] = [
     {
         id: 'badge_infinite',
         label: 'Rango Infinito',
-        image: require('@/assets/badges/rank_infinite_badge.png'),
+        image: require('@/assets/images/rank_infinite.png'),
         unlockCondition: { type: 'rank', value: 'INFINITE' },
         description: 'Trascendencia.',
         type: 'RANK'
+    },
+    // Mastery Badges (Nivel)
+    {
+        id: 'mastery_1',
+        label: 'Maestría I',
+        image: require('@/assets/images/badge_mastery_1.png'),
+        unlockCondition: { type: 'level', value: 10 },
+        description: 'Alcanza el nivel 10.',
+        type: 'MASTERY' as any
+    },
+    {
+        id: 'mastery_2',
+        label: 'Maestría II',
+        image: require('@/assets/images/badge_mastery_2.png'),
+        unlockCondition: { type: 'level', value: 25 },
+        description: 'Alcanza el nivel 25.',
+        type: 'MASTERY' as any
+    },
+    {
+        id: 'mastery_3',
+        label: 'Maestría III',
+        image: require('@/assets/images/badge_mastery_3.png'),
+        unlockCondition: { type: 'level', value: 50 },
+        description: 'Alcanza el nivel 50.',
+        type: 'MASTERY' as any
+    },
+    {
+        id: 'mastery_4',
+        label: 'Gran Maestro',
+        image: require('@/assets/images/badge_mastery_4.png'),
+        unlockCondition: { type: 'level', value: 100 },
+        description: 'Alcanza el nivel 100.',
+        type: 'MASTERY' as any
     }
 ];

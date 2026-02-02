@@ -4,24 +4,25 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PortalView } from '@/components/ui/PortalView';
 import { SkiaGlassPane } from '@/components/ui/SkiaGlassPane';
 import { TotemView } from '@/components/ui/TotemView';
+import { UserAvatar } from '@/components/ui/UserAvatar';
+import { BADGES } from '@/constants/badges';
 import { FRAMES } from '@/constants/frames';
 import { useAuth } from '@/hooks/useAuth';
 import { useGamification } from '@/hooks/useGamification';
+import { useIsFocused } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-
-import { useIsFocused } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Dashboard() {
   const { level, xp, rank } = useGamification();
   const { user } = useAuth();
   const isFocused = useIsFocused();
+  const insets = useSafeAreaInsets();
 
   // Extract name from email or metadata, fallback to 'INICIADO'
   const displayName = user?.user_metadata?.name || user?.email?.split('@')[0]?.toUpperCase() || 'INICIADO';
@@ -31,9 +32,9 @@ export default function Dashboard() {
   const currentFrame = FRAMES.find(f => f.id === currentFrameId);
 
   return (
-    <SafeAreaView className="flex-1 bg-deep-black">
+    <View style={{ flex: 1, backgroundColor: '#09090B', paddingTop: insets.top }}>
       <GradientBackground>
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
           <Animated.View
             key={isFocused ? 'focused' : 'unfocused'}
             entering={FadeInDown.duration(600).springify()}
@@ -76,8 +77,15 @@ export default function Dashboard() {
               className="pt-12 pb-6 px-4 border-b border-border-subtle"
             >
 
-              {/* Logo - Concept */}
-              <View className="items-center mb-6">
+              {/* Header with Guide Access */}
+              <View className="items-center mb-6 relative">
+                <TouchableOpacity
+                  onPress={() => router.push('/guide')}
+                  className="absolute left-2 top-2 z-20 bg-white/5 p-2 rounded-full border border-white/10 active:bg-white/10"
+                >
+                  <IconSymbol name="book.fill" size={20} color="#9CA3AF" />
+                </TouchableOpacity>
+
                 <Image
                   source={require('@/assets/images/forge_logo_final.png')}
                   style={{ width: 180, height: 80 }}
@@ -96,24 +104,12 @@ export default function Dashboard() {
                   onPress={() => router.navigate('/settings')}
                   activeOpacity={0.8}
                 >
-                  <View className="w-24 h-24 bg-card-black items-center justify-center mb-2 relative">
-                    <Image
-                      source={user?.user_metadata?.avatar_url
-                        ? { uri: user.user_metadata.avatar_url }
-                        : require('@/assets/images/simio_angel_concept.png')
-                      }
-                      style={{ width: '90%', height: '90%' }}
-                      contentFit="cover"
+                  <View className="items-center justify-center mb-2">
+                    <UserAvatar
+                      url={user?.user_metadata?.avatar_url}
+                      frame={currentFrame}
+                      size={128} // Increased from 96
                     />
-
-                    {/* Frame Overlay */}
-                    {currentFrame?.image && (
-                      <Image
-                        source={currentFrame.image}
-                        style={{ position: 'absolute', top: '-7.5%', left: '-7.5%', width: '115%', height: '115%', zIndex: 10 }}
-                        contentFit="contain"
-                      />
-                    )}
                   </View>
 
                   {/* Edit Badge */}
@@ -122,35 +118,59 @@ export default function Dashboard() {
                   </View>
                 </TouchableOpacity>
 
-                <Text className="text-text-primary font-black text-xl tracking-widest font-display mb-2">
+                <Text className="text-text-primary font-black text-2xl tracking-widest font-display mb-2">
                   {displayName}
                 </Text>
 
-                {/* Rank Badge - Concept */}
-                <View className="items-center">
-                  {rank === 'BRONZE' && <Image source={require('@/assets/images/rank_bronze.png')} style={{ width: 120, height: 40 }} contentFit="contain" />}
-                  {rank === 'SILVER' && <Image source={require('@/assets/images/rank_silver.png')} style={{ width: 120, height: 40 }} contentFit="contain" />}
-                  {rank === 'GOLD' && <Image source={require('@/assets/images/rank_gold.png')} style={{ width: 120, height: 40 }} contentFit="contain" />}
-                  {rank === 'INFINITE' && <Image source={require('@/assets/images/rank_infinite.png')} style={{ width: 120, height: 40 }} contentFit="contain" />}
+                {/* Badges Display - Larger & No Ranks */}
+                <View className="flex-row items-center gap-3 mt-4 justify-center">
+                  {(user?.user_metadata?.selected_badges || []).map((badgeId: string, index: number) => {
+                    const badge = BADGES.find(b => b.id === badgeId || b.id === badgeId.toLowerCase().replace(/ /g, '_'));
+                    if (!badge || badge.type === 'RANK') return null; // Filter out Ranks
+                    return (
+                      <Animated.View
+                        key={`badge-${index}`}
+                        entering={FadeInDown.delay(index * 100 + 200).springify()}
+                        className="bg-card-black/50 p-1.5 rounded-xl border border-white/10"
+                      >
+                        <Image
+                          source={badge.image}
+                          style={{ width: 48, height: 48 }} // Increased from 40
+                          contentFit="contain"
+                          cachePolicy="memory-disk"
+                          transition={200}
+                        />
+                      </Animated.View>
+                    );
+                  })}
+                </View>
+
+                {/* Rank Badge - Distinct Position Below */}
+                <View className="items-center mt-6">
+                  <Text className="text-white/30 text-[10px] uppercase tracking-widest mb-2 font-bold">Rango Actual</Text>
+                  {rank === 'BRONZE' && <Image source={require('@/assets/images/rank_bronze.png')} style={{ width: 140, height: 48 }} contentFit="contain" />}
+                  {rank === 'SILVER' && <Image source={require('@/assets/images/rank_silver.png')} style={{ width: 140, height: 48 }} contentFit="contain" />}
+                  {rank === 'GOLD' && <Image source={require('@/assets/images/rank_gold.png')} style={{ width: 140, height: 48 }} contentFit="contain" />}
+                  {rank === 'INFINITE' && <Image source={require('@/assets/images/rank_infinite.png')} style={{ width: 140, height: 48 }} contentFit="contain" />}
                 </View>
               </Animated.View>
 
               {/* Level Progress Bar */}
               <Animated.View
                 entering={FadeInDown.delay(150).springify()}
-                className="flex-row items-center gap-3 mb-6"
+                className="flex-row items-center gap-3 mb-8 px-2"
               >
                 <Text className="text-text-primary text-3xl font-black italic font-display">
                   {level}
                 </Text>
-                <View className="flex-1 h-5 bg-card-black overflow-hidden border border-border-subtle relative justify-center rounded-premium">
+                <View className="flex-1 h-5 bg-card-black overflow-hidden border border-border-subtle relative justify-center rounded-premium shadow-inner">
                   <LinearGradient
                     colors={['#EF4444', '#F97316']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={{ width: `${(xp % 100)}%`, height: '100%' }}
                   />
-                  <Text className="absolute self-center text-[10px] font-bold text-white/80 z-10 w-full text-center">
+                  <Text className="absolute self-center text-[10px] font-bold text-white/80 z-10 w-full text-center shadow-black/50">
                     {Math.floor(xp % 100)} / 100 XP
                   </Text>
                 </View>
@@ -230,7 +250,7 @@ export default function Dashboard() {
                       </View>
                       <View>
                         <Text className="text-white text-5xl font-black font-display mb-2">{level}</Text>
-                        <Text className="text-text-secondary text-xs uppercase tracking-widest font-label">Level</Text>
+                        <Text className="text-text-secondary text-[10px] uppercase font-bold tracking-wider font-label">NIVEL</Text>
                       </View>
                     </View>
                   </SkiaGlassPane>
@@ -292,6 +312,6 @@ export default function Dashboard() {
           </Animated.View>
         </ScrollView>
       </GradientBackground>
-    </SafeAreaView >
+    </View>
   );
 }

@@ -1,5 +1,6 @@
-import { GlassPane } from '@/components/ui/GlassPane';
+import { GradientBackground } from '@/components/ui/GradientBackground';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { SkiaGlassPane } from '@/components/ui/SkiaGlassPane';
 import { supabase } from '@/lib/supabase';
 import { Image } from 'expo-image';
 import { Stack, useRouter } from 'expo-router';
@@ -42,118 +43,140 @@ export default function AuthScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-deep-black">
-            <Stack.Screen options={{ headerShown: false }} />
+            <GradientBackground>
+                <Stack.Screen options={{ headerShown: false }} />
 
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                className="flex-1 justify-center px-6"
-            >
-                {/* Logo */}
-                <Animated.View
-                    entering={FadeInDown.delay(0).springify()}
-                    className="items-center mb-12"
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    className="flex-1 justify-center px-6"
                 >
-                    <Image
-                        source={require('@/assets/images/forge_logo_final.png')}
-                        style={{ width: 200, height: 90 }}
-                        contentFit="contain"
-                    />
-                    <View className="flex-row items-center gap-2 mt-4">
-                        <IconSymbol name="flame.fill" size={12} color="#F97316" />
-                        <Text className="text-text-secondary text-xs uppercase tracking-widest font-bold">
-                            Forja tu destino
-                        </Text>
-                        <IconSymbol name="flame.fill" size={12} color="#F97316" />
+                    {/* Minimalist Grid Background - Consistent across app */}
+                    <View className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-30">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                            <View
+                                key={`v-${i}`}
+                                style={{
+                                    position: 'absolute',
+                                    left: `${(i + 1) * 12.5}%`,
+                                    top: 0,
+                                    bottom: 0,
+                                    width: 1,
+                                    backgroundColor: 'rgba(255,255,255,0.03)'
+                                }}
+                            />
+                        ))}
                     </View>
-                </Animated.View>
 
-                {/* Premium Copy */}
-                <Animated.View
-                    entering={FadeInDown.delay(100).springify()}
-                    className="mb-8"
-                >
-                    <Text className="text-text-primary text-3xl font-black text-center mb-3 font-display leading-tight">
-                        SOLICITA{'\n'}ACCESO
-                    </Text>
-                    <Text className="text-text-secondary text-center text-sm">
-                        Únete a los que transforman hábitos en poder
-                    </Text>
-                </Animated.View>
-
-                {/* Form - Glassmorphism */}
-                <GlassPane intensity={30} tint="dark" borderOpacity={0.15} className="gap-y-5 p-6 rounded-3xl mb-8">
-                    <Animated.View entering={FadeInDown.delay(150).springify()}>
-                        <Text className="text-text-secondary mb-2 ml-1 text-xs uppercase tracking-wider font-bold">
-                            Email
-                        </Text>
-                        <TextInput
-                            className="bg-black/30 text-text-primary p-4 rounded-xl border border-white/10"
-                            placeholder="tu@email.com"
-                            placeholderTextColor="#6B7280"
-                            onChangeText={setEmail}
-                            value={email}
-                            autoCapitalize="none"
-                            keyboardType="email-address"
+                    {/* Logo */}
+                    <Animated.View
+                        entering={FadeInDown.delay(0).springify()}
+                        className="items-center mb-10"
+                    >
+                        <Image
+                            source={require('@/assets/images/forge_logo_final.png')}
+                            style={{ width: 220, height: 100 }}
+                            contentFit="contain"
+                            placeholder={null}
+                            transition={200}
                         />
+                        <View className="flex-row items-center gap-2 mt-2 bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                            <IconSymbol name="flame.fill" size={10} color="#F97316" />
+                            <Text className="text-gray-400 text-[10px] uppercase tracking-[0.2em] font-bold">
+                                Sistema de Hábitos
+                            </Text>
+                            <IconSymbol name="flame.fill" size={10} color="#F97316" />
+                        </View>
                     </Animated.View>
 
-                    <Animated.View entering={FadeInDown.delay(200).springify()}>
-                        <Text className="text-text-secondary mb-2 ml-1 text-xs uppercase tracking-wider font-bold">
-                            Contraseña
-                        </Text>
-                        <TextInput
-                            className="bg-black/30 text-text-primary p-4 rounded-xl border border-white/10"
-                            placeholder="••••••••"
-                            placeholderTextColor="#6B7280"
-                            secureTextEntry={true}
-                            onChangeText={setPassword}
-                            value={password}
-                            autoCapitalize="none"
-                        />
+                    {/* Form Container */}
+                    <Animated.View entering={FadeInDown.delay(100).springify()}>
+                        <SkiaGlassPane
+                            height={undefined}
+                            cornerRadius={24}
+                            backgroundColor="rgba(10, 10, 12, 0.6)"
+                            borderColor="rgba(255, 255, 255, 0.1)"
+                        >
+                            <View className="p-6 gap-y-5">
+                                <View>
+                                    <Text className="text-text-primary text-2xl font-black mb-1 font-display tracking-wide uppercase">
+                                        Acceso
+                                    </Text>
+                                    <Text className="text-text-secondary text-xs">
+                                        Identifícate para sincronizar tu progreso
+                                    </Text>
+                                </View>
+
+                                <View>
+                                    <Text className="text-gray-400 mb-2 ml-1 text-[10px] uppercase tracking-wider font-bold">
+                                        Correo Electrónico
+                                    </Text>
+                                    <TextInput
+                                        className="bg-black/40 text-white p-4 rounded-xl border border-white/10 font-medium"
+                                        placeholder="tu@email.com"
+                                        placeholderTextColor="#4B5563"
+                                        onChangeText={setEmail}
+                                        value={email}
+                                        autoCapitalize="none"
+                                        keyboardType="email-address"
+                                    />
+                                </View>
+
+                                <View>
+                                    <Text className="text-gray-400 mb-2 ml-1 text-[10px] uppercase tracking-wider font-bold">
+                                        Clave de Acceso
+                                    </Text>
+                                    <TextInput
+                                        className="bg-black/40 text-white p-4 rounded-xl border border-white/10 font-medium"
+                                        placeholder="••••••••"
+                                        placeholderTextColor="#4B5563"
+                                        secureTextEntry={true}
+                                        onChangeText={setPassword}
+                                        value={password}
+                                        autoCapitalize="none"
+                                    />
+                                </View>
+
+                                <TouchableOpacity
+                                    onPress={signInWithEmail}
+                                    disabled={loading}
+                                    className="bg-forge-orange py-4 rounded-xl active:scale-95 transition-transform shadow-lg shadow-orange-500/20 mt-2"
+                                    style={{ opacity: loading ? 0.7 : 1 }}
+                                >
+                                    <Text className="text-black font-black text-center text-sm uppercase tracking-widest">
+                                        {loading ? 'Sincronizando...' : 'Entrar al Portal'}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </SkiaGlassPane>
                     </Animated.View>
-                </GlassPane>
 
-                {/* CTAs - Premium Copy */}
-                <Animated.View
-                    entering={FadeInDown.delay(250).springify()}
-                    className="mt-8 gap-y-4"
-                >
-                    <TouchableOpacity
-                        onPress={signInWithEmail}
-                        disabled={loading}
-                        className="bg-forge-orange py-4 rounded-premium active:scale-97"
-                        style={{ opacity: loading ? 0.6 : 1 }}
+                    {/* Create Account - Minimalist Link */}
+                    <Animated.View
+                        entering={FadeInDown.delay(200).springify()}
+                        className="mt-8 items-center"
                     >
-                        <Text className="text-deep-black font-black text-center text-base uppercase tracking-widest">
-                            {loading ? 'PROCESANDO...' : 'OBTENER ACCESO'}
-                        </Text>
-                    </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={signUpWithEmail}
+                            disabled={loading}
+                            className="py-3 px-6 rounded-full border border-white/10 active:bg-white/5"
+                        >
+                            <Text className="text-gray-400 font-bold text-center text-xs uppercase tracking-wider">
+                                ¿No tienes cuenta? <Text className="text-white">Inicia el Viaje</Text>
+                            </Text>
+                        </TouchableOpacity>
+                    </Animated.View>
 
-                    <TouchableOpacity
-                        onPress={signUpWithEmail}
-                        disabled={loading}
-                        className="bg-card-black py-4 rounded-premium border border-border-subtle active:scale-97"
-                        style={{ opacity: loading ? 0.6 : 1 }}
+                    {/* Social Proof / Footer */}
+                    <Animated.View
+                        entering={FadeInDown.delay(300).springify()}
+                        className="absolute bottom-10 self-center"
                     >
-                        <Text className="text-text-primary font-bold text-center text-base uppercase tracking-wider">
-                            CREAR CUENTA
+                        <Text className="text-white/20 text-[10px] font-mono tracking-widest uppercase">
+                            Forged in Deepmind v1.0
                         </Text>
-                    </TouchableOpacity>
-                </Animated.View>
-
-                {/* Social Proof */}
-                <Animated.View
-                    entering={FadeInDown.delay(300).springify()}
-                    className="mt-8"
-                >
-                    <View className="flex-row items-center justify-center gap-2">
-                        <IconSymbol name="checkmark.circle.fill" size={16} color="#22C55E" />
-                        <Text className="text-text-tertiary text-xs">
-                            +1,000 forjadores activos
-                        </Text>
-                    </View>
-                </Animated.View>
-            </KeyboardAvoidingView>
+                    </Animated.View>
+                </KeyboardAvoidingView>
+            </GradientBackground>
         </SafeAreaView>
     );
 }

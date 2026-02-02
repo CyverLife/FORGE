@@ -4,13 +4,14 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HabitsScreen() {
     const [modalVisible, setModalVisible] = React.useState(false);
+    const insets = useSafeAreaInsets();
 
     return (
-        <SafeAreaView className="flex-1 bg-deep-black">
+        <View style={{ flex: 1, backgroundColor: '#09090B', paddingTop: insets.top }}>
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
 
                 {/* Header */}
@@ -48,6 +49,6 @@ export default function HabitsScreen() {
             </TouchableOpacity>
 
             <CreateHabitModal visible={modalVisible} onClose={() => setModalVisible(false)} />
-        </SafeAreaView>
+        </View>
     );
 }

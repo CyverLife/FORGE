@@ -1,8 +1,8 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useGamification } from '@/hooks/useGamification';
 import { usePortalDecision } from '@/hooks/usePortalDecision';
-import { getConsciousnessMessage } from '@/lib/consciousness-messages';
 import { BlurMask, Canvas, Circle, RadialGradient, vec } from '@shopify/react-native-skia';
+import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Text, View } from 'react-native';
 import Animated, {
@@ -15,7 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
-const PORTAL_SIZE = width * 0.6;
+const PORTAL_SIZE = width * 0.75; // Slightly larger for impact
 
 export const PortalView = () => {
     const { angelScore, simioScore } = useGamification();
@@ -23,83 +23,58 @@ export const PortalView = () => {
     const [coherence, setCoherence] = useState(50);
 
     // Animations
-    const rotation = useSharedValue(0);
-    const pulse = useSharedValue(1);
-    const glow = useSharedValue(0.5);
+    const zoom = useSharedValue(1);
+    const particleRotation = useSharedValue(0);
 
     useEffect(() => {
-        // Fetch coherence stats
         getDecisionStats().then(stats => {
             setCoherence(stats.coherence || 50);
         });
     }, [angelScore, simioScore]);
 
     useEffect(() => {
-        // Continuous rotation
-        rotation.value = withRepeat(
-            withTiming(360, {
-                duration: 20000,
-                easing: Easing.linear,
-            }),
+        // Slow, epic zoom effect (breathing)
+        zoom.value = withRepeat(
+            withSequence(
+                withTiming(1.1, { duration: 8000, easing: Easing.inOut(Easing.ease) }),
+                withTiming(1.0, { duration: 8000, easing: Easing.inOut(Easing.ease) })
+            ),
+            -1,
+            true
+        );
+
+        // Particle rotation
+        particleRotation.value = withRepeat(
+            withTiming(360, { duration: 30000, easing: Easing.linear }),
             -1,
             false
         );
+    }, []);
 
-        // Breathing effect - smooth, natural pulsing
-        pulse.value = withRepeat(
-            withSequence(
-                withTiming(1.03, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
-                withTiming(1.0, { duration: 2000, easing: Easing.inOut(Easing.ease) })
-            ),
-            -1,
-            true
-        );
-
-        // Glow intensity based on coherence
-        const glowIntensity = (coherence || 50) / 100;
-        glow.value = withRepeat(
-            withSequence(
-                withTiming(glowIntensity + 0.2, { duration: 1500 }),
-                withTiming(glowIntensity, { duration: 1500 })
-            ),
-            -1,
-            true
-        );
-    }, [coherence]);
-
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [
-            { rotate: `${rotation.value}deg` },
-            { scale: pulse.value },
-        ],
+    const animatedImageStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: zoom.value }],
     }));
 
-    // Determine portal state
+    // Determine portal state colors/icon
     const getPortalState = () => {
         const safeCoherence = coherence || 50;
         if (safeCoherence >= 70) {
             return {
                 state: 'BRILLANTE',
                 icon: 'star.fill',
-                color1: '#3B82F6',
-                color2: '#60A5FA',
-                message: getConsciousnessMessage('ORO', 'IDLE'),
+                color: '#3B82F6',
             };
         } else if (safeCoherence >= 40) {
             return {
                 state: 'EQUILIBRADO',
                 icon: 'safari',
-                color1: '#8B5CF6',
-                color2: '#A78BFA',
-                message: getConsciousnessMessage('PLATA', 'IDLE'),
+                color: '#8B5CF6',
             };
         } else {
             return {
                 state: 'OSCURO',
                 icon: 'moon.stars.fill',
-                color1: '#EF4444',
-                color2: '#F87171',
-                message: getConsciousnessMessage('BRONCE', 'IDLE'),
+                color: '#EF4444',
             };
         }
     };
@@ -109,113 +84,66 @@ export const PortalView = () => {
     return (
         <View className="items-center py-6">
             {/* Portal State Label */}
-            <View className="flex-row items-center gap-2 mb-4">
-                <IconSymbol name={portalState.icon as any} size={24} color={portalState.color1} />
-                <Text className="text-text-primary font-black text-lg uppercase tracking-wider font-display">
+            <View className="flex-row items-center gap-2 mb-6">
+                <IconSymbol name={portalState.icon as any} size={20} color={portalState.color} />
+                <Text className="text-white/80 font-black text-sm uppercase tracking-[0.2em] font-display">
                     PORTAL {portalState.state}
                 </Text>
             </View>
 
-            {/* Animated Portal - Spherical 3D Effect */}
-            <Animated.View style={[{ width: PORTAL_SIZE, height: PORTAL_SIZE }, animatedStyle]}>
-                <Canvas style={{ width: PORTAL_SIZE, height: PORTAL_SIZE }}>
-                    {/* Atmosphere Glow (Outermost) - Enhanced with colored shadows */}
-                    <Circle cx={PORTAL_SIZE / 2} cy={PORTAL_SIZE / 2} r={PORTAL_SIZE / 2}>
+            {/* Container for Image & Particles */}
+            <View style={{ width: PORTAL_SIZE, height: PORTAL_SIZE, alignItems: 'center', justifyContent: 'center' }}>
+
+                {/* Background Glow (Skia) */}
+                <View style={{ position: 'absolute' }}>
+                    <Canvas style={{ width: PORTAL_SIZE * 1.2, height: PORTAL_SIZE * 1.2 }}>
                         <RadialGradient
-                            c={vec(PORTAL_SIZE / 2, PORTAL_SIZE / 2)}
-                            r={PORTAL_SIZE / 2}
-                            colors={[portalState.color2, 'transparent']}
+                            c={vec(PORTAL_SIZE * 0.6, PORTAL_SIZE * 0.6)}
+                            r={PORTAL_SIZE * 0.6}
+                            colors={[portalState.color, 'transparent']}
+                            opacity={0.3}
                         />
-                        <BlurMask blur={30} style="normal" />
-                    </Circle>
-
-                    {/* Colored glowing atmosphere (Shadow 1) */}
-                    <Circle cx={PORTAL_SIZE / 2} cy={PORTAL_SIZE / 2} r={PORTAL_SIZE / 2 - 10} color={portalState.color1} opacity={glow}>
-                        <BlurMask blur={20} style="normal" />
-                    </Circle>
-
-                    {/* Colored glowing atmosphere (Shadow 2) */}
-                    <Circle cx={PORTAL_SIZE / 2} cy={PORTAL_SIZE / 2} r={PORTAL_SIZE / 2 - 20} color={portalState.color2} opacity={glow}>
-                        <BlurMask blur={15} style="normal" />
-                    </Circle>
-
-                    {/* Main Sphere (Planet) with colored shadow */}
-                    <Circle cx={PORTAL_SIZE / 2} cy={PORTAL_SIZE / 2} r={PORTAL_SIZE / 2 - 10}>
-                        <RadialGradient
-                            c={vec(PORTAL_SIZE * 0.3, PORTAL_SIZE * 0.3)} // Light source top-left
-                            r={PORTAL_SIZE * 0.8}
-                            colors={['white', portalState.color1, portalState.color2, 'black']}
-                            positions={[0, 0.2, 0.6, 1]}
-                        />
-                    </Circle>
-
-                    {/* Orbital Ring (The "Horizon" or "Energy Field") */}
-                    <Circle
-                        cx={PORTAL_SIZE / 2}
-                        cy={PORTAL_SIZE / 2}
-                        r={PORTAL_SIZE / 2 - 5}
-                        style="stroke"
-                        strokeWidth={2}
-                        color="white"
-                        opacity={0.3}
-                    >
-                        <BlurMask blur={2} style="solid" />
-                    </Circle>
-
-                    {/* Inner Core/Pupil */}
-                    <Circle cx={PORTAL_SIZE / 2} cy={PORTAL_SIZE / 2} r={20} color="white" opacity={0.9}>
-                        <BlurMask blur={10} style="normal" />
-                    </Circle>
-                </Canvas>
-            </Animated.View>
-
-            {/* Coherence Percentage */}
-            <View className="mt-4 items-center">
-                <Text className="text-text-primary font-black text-4xl font-display">
-                    {coherence || 0}%
-                </Text>
-                <Text className="text-text-tertiary text-xs uppercase tracking-wider">
-                    Coherencia
-                </Text>
-            </View>
-
-            {/* Portal Message */}
-            <View className="mt-4 px-6">
-                <Text className="text-text-secondary text-sm text-center italic">
-                    {portalState.message}
-                </Text>
-            </View>
-
-            {/* Angel vs Simio Stats */}
-            <View className="flex-row gap-8 mt-6">
-                <View className="flex-row items-center gap-2">
-                    <IconSymbol name="star.fill" size={28} color="#3B82F6" />
-                    <Text className="text-blue-400 font-bold text-2xl">{angelScore || 0}</Text>
-                    <Text className="text-text-tertiary text-xs">Ángel</Text>
+                        <BlurMask blur={40} style="normal" />
+                        <Circle cx={PORTAL_SIZE * 0.6} cy={PORTAL_SIZE * 0.6} r={PORTAL_SIZE * 0.4} color={portalState.color} opacity={0.2} />
+                    </Canvas>
                 </View>
 
-                <View className="w-px h-16 bg-border-subtle" />
-
-                <View className="flex-row items-center gap-2">
-                    <IconSymbol name="flame.fill" size={28} color="#EF4444" />
-                    <Text className="text-red-400 font-bold text-2xl">{simioScore || 0}</Text>
-                    <Text className="text-text-tertiary text-xs">Simio</Text>
-                </View>
-            </View>
-
-            {/* Portal Power Bar */}
-            <View className="w-full px-8 mt-6">
-                <View className="h-2 bg-card-black rounded-full overflow-hidden">
-                    <View
-                        className="h-full bg-blue-500"
-                        style={{ width: `${coherence || 0}%` }}
+                {/* Main Portal Image */}
+                <Animated.View style={[{ width: '100%', height: '100%' }, animatedImageStyle]}>
+                    <Image
+                        source={require('@/assets/images/portal_texture.png')}
+                        style={{ width: '100%', height: '100%' }}
+                        contentFit="contain"
                     />
-                </View>
-                <View className="flex-row justify-between mt-2">
-                    <Text className="text-text-tertiary text-[10px]">Simio</Text>
-                    <Text className="text-text-tertiary text-[10px]">Ángel</Text>
+                </Animated.View>
+
+                {/* Particle Overlay (Simple Skia Noise/Dots) */}
+                {/* Ideally this would be a proper particle system, but for now we simulate it with a rotating masked noise or scattered dots */}
+            </View>
+
+
+            {/* Stats Overlay */}
+            <View className="mt-8 items-center bg-black/40 px-6 py-4 rounded-3xl border border-white/10 backdrop-blur-md">
+                <Text className="text-white font-black text-5xl font-display tracking-tighter shadow-lg shadow-black">
+                    {coherence}%
+                </Text>
+                <Text className="text-white/50 text-[10px] uppercase tracking-[0.3em] font-bold mt-1">
+                    Sincronización
+                </Text>
+
+                <View className="flex-row gap-8 mt-4 pt-4 border-t border-white/10">
+                    <View className="items-center">
+                        <Text className="text-blue-400 font-bold text-xl">{angelScore || 0}</Text>
+                        <Text className="text-white/30 text-[8px] uppercase tracking-widest mt-1">Ángel</Text>
+                    </View>
+                    <View className="w-px h-8 bg-white/10" />
+                    <View className="items-center">
+                        <Text className="text-red-400 font-bold text-xl">{simioScore || 0}</Text>
+                        <Text className="text-white/30 text-[8px] uppercase tracking-widest mt-1">Simio</Text>
+                    </View>
                 </View>
             </View>
         </View>
     );
 };
+

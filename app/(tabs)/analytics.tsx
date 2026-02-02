@@ -1,5 +1,6 @@
 import { GradientBackground } from '@/components/ui/GradientBackground';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { PortalView } from '@/components/ui/PortalView';
 import { SkiaGlassPane } from '@/components/ui/SkiaGlassPane';
 import { useGamification } from '@/hooks/useGamification';
 import { useHabits } from '@/hooks/useHabits';
@@ -92,64 +93,14 @@ export default function AnalyticsScreen() {
                         className="mx-4 mt-6"
                     >
                         <SkiaGlassPane
-                            height={undefined} // Let flex handle it
+                            height={undefined}
                             cornerRadius={20}
                             backgroundColor="rgba(20, 20, 23, 0.6)"
                             shadowColor="rgba(59, 130, 246, 0.15)"
                             borderColor="rgba(255, 255, 255, 0.1)"
                         >
-                            <View className="p-6">
-                                <View className="flex-row items-center justify-between mb-4">
-                                    <Text className="text-text-secondary text-xs uppercase tracking-wider font-bold font-label">
-                                        Ángel vs Simio
-                                    </Text>
-                                    <Text className="text-forge-orange text-xs font-bold font-mono">
-                                        Coherencia: {coherence}%
-                                    </Text>
-                                </View>
-
-                                {/* Dual Bars */}
-                                <View className="gap-6">
-                                    {/* Angel */}
-                                    <View>
-                                        <View className="flex-row items-center justify-between mb-2">
-                                            <View className="flex-row items-center gap-2">
-                                                <Text className="text-2xl">😇</Text>
-                                                <Text className="text-text-primary font-bold font-display">El Ángel</Text>
-                                            </View>
-                                            <Text className="text-text-primary font-bold font-mono text-lg">{angelScore}</Text>
-                                        </View>
-                                        <View className="h-4 bg-black/40 rounded-full overflow-hidden border border-white/5">
-                                            <View
-                                                className="h-full bg-blue-500 shadow-lg shadow-blue-500/50"
-                                                style={{ width: `${coherence}%` }}
-                                            />
-                                        </View>
-                                        <Text className="text-text-tertiary text-xs mt-1 font-label opacity-70">
-                                            Disciplina, enfoque, propósito
-                                        </Text>
-                                    </View>
-
-                                    {/* Simio */}
-                                    <View>
-                                        <View className="flex-row items-center justify-between mb-2">
-                                            <View className="flex-row items-center gap-2">
-                                                <Text className="text-2xl">🐒</Text>
-                                                <Text className="text-text-primary font-bold font-display">El Simio</Text>
-                                            </View>
-                                            <Text className="text-text-primary font-bold font-mono text-lg">{simioScore}</Text>
-                                        </View>
-                                        <View className="h-4 bg-black/40 rounded-full overflow-hidden border border-white/5">
-                                            <View
-                                                className="h-full bg-orange-500 shadow-lg shadow-orange-500/50"
-                                                style={{ width: `${100 - coherence}%` }}
-                                            />
-                                        </View>
-                                        <Text className="text-text-tertiary text-xs mt-1 font-label opacity-70">
-                                            Impulsividad, procrastinación, gratificación
-                                        </Text>
-                                    </View>
-                                </View>
+                            <View className="py-2">
+                                <PortalView />
                             </View>
                         </SkiaGlassPane>
                     </Animated.View>

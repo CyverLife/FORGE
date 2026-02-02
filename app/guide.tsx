@@ -1,0 +1,137 @@
+import { GradientBackground } from '@/components/ui/GradientBackground';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { SkiaGlassPane } from '@/components/ui/SkiaGlassPane';
+import { Image } from 'expo-image';
+import { router, Stack } from 'expo-router';
+import React from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+export default function GuideScreen() {
+    return (
+        <SafeAreaView className="flex-1 bg-deep-black">
+            <GradientBackground>
+                <Stack.Screen options={{ headerShown: false }} />
+
+                {/* Header */}
+                <View className="flex-row items-center justify-between px-6 pt-6 pb-4">
+                    <TouchableOpacity
+                        onPress={() => router.back()}
+                        className="bg-white/10 p-2 rounded-full active:scale-95"
+                    >
+                        <IconSymbol name="chevron.left" size={24} color="white" />
+                    </TouchableOpacity>
+                    <Text className="text-white font-black text-lg uppercase tracking-widest font-display">
+                        MANIFIESTO
+                    </Text>
+                    <View className="w-10" /> {/* Spacer */}
+                </View>
+
+                <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+
+                    {/* Hero Section */}
+                    <Animated.View entering={FadeInDown.delay(100).springify()} className="mb-8 items-center">
+                        <View className="w-24 h-24 bg-forge-orange/10 rounded-full items-center justify-center mb-4 border border-forge-orange/30">
+                            <IconSymbol name="flame.fill" size={48} color="#F97316" />
+                        </View>
+                        <Text className="text-white font-black text-3xl text-center uppercase tracking-tighter mb-2">
+                            LA FORJA INTERNA
+                        </Text>
+                        <Text className="text-gray-400 text-center text-sm leading-6">
+                            No estás aquí para "intentarlo". Estás aquí para decidir quién gana la guerra diaria por tu consciencia.
+                        </Text>
+                    </Animated.View>
+
+                    {/* Section 1: Angel vs Simio */}
+                    <Animated.View entering={FadeInRight.delay(200).springify()} className="mb-8">
+                        <SkiaGlassPane height={undefined} cornerRadius={20} backgroundColor="rgba(30, 30, 35, 0.6)" borderColor="rgba(255,255,255,0.1)">
+                            <View className="p-6">
+                                <View className="flex-row items-center gap-3 mb-4">
+                                    <IconSymbol name="scalemass.fill" size={24} color="#60A5FA" />
+                                    <Text className="text-white font-bold text-xl uppercase">El conflicto ETERNO</Text>
+                                </View>
+                                <Text className="text-gray-300 mb-4 leading-relaxed">
+                                    Dentro de ti habitan dos fuerzas opuestas:
+                                </Text>
+
+                                <View className="flex-row gap-4 mb-4">
+                                    <View className="flex-1 bg-blue-500/10 p-3 rounded-xl border border-blue-500/20 items-center">
+                                        <IconSymbol name="star.fill" size={24} color="#60A5FA" />
+                                        <Text className="text-blue-400 font-bold mt-2 uppercase text-xs tracking-wider">EL ÁNGEL</Text>
+                                        <Text className="text-white/60 text-[10px] text-center mt-1">Disciplina, Visión, Sacrificio.</Text>
+                                    </View>
+                                    <View className="flex-1 bg-red-500/10 p-3 rounded-xl border border-red-500/20 items-center">
+                                        <IconSymbol name="flame.fill" size={24} color="#EF4444" />
+                                        <Text className="text-red-400 font-bold mt-2 uppercase text-xs tracking-wider">EL SIMIO</Text>
+                                        <Text className="text-white/60 text-[10px] text-center mt-1">Placer, Pereza, Impulso.</Text>
+                                    </View>
+                                </View>
+                            </View>
+                        </SkiaGlassPane>
+                    </Animated.View>
+
+                    {/* Section 2: Why 50%? */}
+                    <Animated.View entering={FadeInRight.delay(300).springify()} className="mb-8">
+                        <SkiaGlassPane height={undefined} cornerRadius={20} backgroundColor="rgba(30, 30, 35, 0.6)" borderColor="rgba(255,255,255,0.1)">
+                            <View className="p-6">
+                                <View className="flex-row items-center gap-3 mb-4">
+                                    <IconSymbol name="chart.bar.fill" size={24} color="#8B5CF6" />
+                                    <Text className="text-white font-bold text-xl uppercase">¿Por qué 50%?</Text>
+                                </View>
+                                <Text className="text-gray-300 leading-relaxed font-medium">
+                                    <Text className="text-purple-400 font-bold">La Coherencia</Text> comienza en el centro. No eres ni un santo ni un pecador al despertar; eres un campo de batalla neutral.
+                                </Text>
+                                <View className="h-px bg-white/10 my-4" />
+                                <Text className="text-gray-400 text-sm leading-6">
+                                    Cada decisión que tomas mueve la aguja.{'\n'}
+                                    • Cumplir un hábito = <Text className="text-blue-400">+ Puntos Ángel</Text>{'\n'}
+                                    • Fallar o ceder = <Text className="text-red-400">+ Puntos Simio</Text>
+                                </Text>
+                            </View>
+                        </SkiaGlassPane>
+                    </Animated.View>
+
+                    {/* Section 3: The Portal */}
+                    <Animated.View entering={FadeInRight.delay(400).springify()} className="mb-8">
+                        <SkiaGlassPane height={undefined} cornerRadius={20} backgroundColor="rgba(30, 30, 35, 0.6)" borderColor="rgba(255,255,255,0.1)">
+                            <View className="p-6">
+                                <View className="flex-row items-center gap-3 mb-4">
+                                    <IconSymbol name="eye.fill" size={24} color="#F97316" />
+                                    <Text className="text-white font-bold text-xl uppercase">El Portal</Text>
+                                </View>
+                                <Text className="text-gray-300 leading-relaxed mb-4">
+                                    Lo que ves en el Dashboard no es solo un adorno. Es el reflejo de tu estado mental actual.
+                                </Text>
+                                <View className="flex-row items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5">
+                                    <Image source={require('@/assets/images/portal_texture.png')} style={{ width: 40, height: 40 }} contentFit="contain" />
+                                    <View className="flex-1">
+                                        <Text className="text-white font-bold text-xs uppercase">Brillante y azul</Text>
+                                        <Text className="text-gray-500 text-[10px]">Dominio total. Estás en racha.</Text>
+                                    </View>
+                                </View>
+                                <View className="flex-row items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/5 mt-2">
+                                    <View className="w-10 h-10 rounded-full bg-red-900/50 items-center justify-center border border-red-500/30">
+                                        <IconSymbol name="exclamationmark.triangle.fill" size={16} color="#EF4444" />
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className="text-white font-bold text-xs uppercase">Oscuro y rojo</Text>
+                                        <Text className="text-gray-500 text-[10px]">El Simio está ganando. Cuidado.</Text>
+                                    </View>
+                                </View>
+                            </View>
+                        </SkiaGlassPane>
+                    </Animated.View>
+
+                    {/* Footer */}
+                    <View className="items-center mt-4 mb-8">
+                        <Text className="text-white/30 text-xs italic">
+                            "La forja no perdona, solo transforma."
+                        </Text>
+                    </View>
+
+                </ScrollView>
+            </GradientBackground>
+        </SafeAreaView>
+    );
+}

@@ -58,6 +58,9 @@ const MAPPING = {
   'hand.tap.fill': 'touch-app',
   'arrow.right.square': 'exit-to-app',
   'arrow.up.circle.fill': 'arrow-circle-up',
+  'person.fill': 'person',
+  'person.circle.fill': 'account-circle',
+  'photo.stack.fill': 'collections',
 } as IconMapping;
 
 /**

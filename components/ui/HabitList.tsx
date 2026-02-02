@@ -162,9 +162,12 @@ export const HabitList = () => {
             >
                 <TouchableOpacity
                     onPress={() => !item.completed_today && handleHabitPress(item)}
-                    onLongPress={() => handleDeleteHabit(item)}
-                    activeOpacity={item.completed_today ? 1 : 0.9}
-                    delayLongPress={500}
+                    onLongPress={() => {
+                        playHaptic('medium');
+                        handleDeleteHabit(item);
+                    }}
+                    activeOpacity={item.completed_today ? 1 : 0.7}
+                    delayLongPress={250}
                 >
                     <QuestCard
                         habit={item}
@@ -212,6 +215,10 @@ export const HabitList = () => {
                 <View className="bg-[#1A1110] px-3 py-1 rounded border border-[#F97316]">
                     <Text className="text-[#F97316] font-bold text-[10px] tracking-widest">{filteredHabits.length} ACTIVOS</Text>
                 </View>
+            </View>
+
+            <View className="px-4 mb-2">
+                <Text className="text-text-tertiary text-[10px] text-right italic">Mantén presionado para eliminar</Text>
             </View>
 
             <View style={{ minHeight: 200, flex: 1 }}>
