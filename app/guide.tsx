@@ -25,7 +25,7 @@ export default function GuideScreen() {
                     <Text className="text-white font-black text-lg uppercase tracking-widest font-display">
                         MANIFIESTO
                     </Text>
-                    <View className="w-10" /> {/* Spacer */}
+                    <View className="w-10" />
                 </View>
 
                 <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>

@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
-import { Alert } from 'react-native';
 
 // Helper to decode base64
 function decode(base64: string) {
@@ -41,8 +40,7 @@ export const pickImageFromLibrary = async (aspect: [number, number] = [4, 3]) =>
     try {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
-            Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería para cambiar tu avatar.');
-            return null;
+            throw new Error('Necesitamos acceso a tu galería para cambiar tu avatar.');
         }
 
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -58,9 +56,8 @@ export const pickImageFromLibrary = async (aspect: [number, number] = [4, 3]) =>
         }
 
         return result.assets[0];
-    } catch (error) {
-        Alert.alert('Error', 'No se pudo abrir la galería');
-        return null;
+    } catch (error: any) {
+        throw new Error(error.message || 'No se pudo abrir la galería');
     }
 };
 
@@ -88,7 +85,6 @@ export const uploadImageToSupabase = async (
         return publicUrl;
     } catch (error: any) {
         console.error('Upload error:', error);
-        Alert.alert('Error al subir imagen', error.message);
-        return null;
+        throw new Error(error.message || 'Error al subir imagen');
     }
 };

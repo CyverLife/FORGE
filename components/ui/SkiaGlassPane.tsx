@@ -97,6 +97,5 @@ export const SkiaGlassPane = ({
 const styles = StyleSheet.create({
     contentContainer: {
         zIndex: 1,
-        flex: 1,
     },
 });

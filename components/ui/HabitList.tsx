@@ -1,10 +1,12 @@
+import { useGlobalAlert } from '@/context/GlobalAlertContext';
 import { useHabits } from '@/hooks/useHabits';
+
 import { PortalDecisionType } from '@/hooks/usePortalDecision';
 import { useSoundSystem } from '@/hooks/useSoundSystem';
 import { Habit, SensorySlideData } from '@/types';
 import { FlashList as ShopifyFlashList } from '@shopify/flash-list';
 import React, { useCallback, useState } from 'react';
-import { Alert, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Reanimated, { FadeInDown, useAnimatedStyle } from 'react-native-reanimated';
 import { IconSymbol } from './icon-symbol';
@@ -16,9 +18,11 @@ import { SensorySlideCard } from './SensorySlideCard';
 const FlashList = ShopifyFlashList as any;
 
 export const HabitList = () => {
+    const { showAlert } = useGlobalAlert();
     const { habits, loading, logHabit, deleteHabit } = useHabits();
     const { playSound, playHaptic } = useSoundSystem();
     const [filter, setFilter] = useState<'ALL' | 'IRON' | 'FIRE' | 'STEEL' | 'FOCUS'>('ALL');
+    const [isEditing, setIsEditing] = useState(false);
 
     // Portal Decision Modal State
     const [portalModalVisible, setPortalModalVisible] = useState(false);
@@ -42,7 +46,7 @@ export const HabitList = () => {
             try {
                 await logHabit(habitId, status);
             } catch (error) {
-                Alert.alert('Error', 'Failed to log protocol.');
+                showAlert('Error', 'Failed to log protocol.');
             }
         }
     }, [logHabit]);
@@ -55,7 +59,7 @@ export const HabitList = () => {
             await logHabit(pendingHabit.id, pendingHabit.status);
             // Portal decision is already recorded by the modal's hook
         } catch (error) {
-            Alert.alert('Error', 'Failed to log protocol.');
+            showAlert('Error', 'Failed to log protocol.');
         } finally {
             setPendingHabit(null);
         }
@@ -72,7 +76,7 @@ export const HabitList = () => {
     };
 
     const handleDeleteHabit = (habit: Habit) => {
-        Alert.alert(
+        showAlert(
             'Eliminar Protocolo',
             `¿Estás seguro de que deseas eliminar "${habit.title}"? Esta acción no se puede deshacer.`,
             [
@@ -120,62 +124,68 @@ export const HabitList = () => {
     const renderItem = ({ item, index }: { item: Habit, index: number }) => (
         <Reanimated.View
             entering={FadeInDown.delay(index * 100).springify()}
-            style={{ marginBottom: 12 }}
+            style={{ marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 12 }}
         >
-            <ReanimatedSwipeable
-                containerStyle={{ width: '100%' }}
-                friction={2}
-                enableTrackpadTwoFingerGesture
-                rightThreshold={40}
-                leftThreshold={40}
-                enabled={!item.completed_today} // ANTI-CHEAT: Disable swipe if completed
-                renderLeftActions={(_prog, drag) => {
-                    const styleAnimation = useAnimatedStyle(() => ({
-                        transform: [{ translateX: drag.value - 80 }],
-                    }));
-                    return (
-                        <Reanimated.View style={styleAnimation} className="bg-emerald-900/50 justify-center items-center w-20 rounded-xl mb-3 h-full absolute left-0">
-                            <IconSymbol name="checkmark.circle.fill" size={24} color="#10B981" />
-                        </Reanimated.View>
-                    );
-                }}
-                renderRightActions={(_prog, drag) => {
-                    const styleAnimation = useAnimatedStyle(() => ({
-                        transform: [{ translateX: drag.value + 80 }],
-                    }));
-                    return (
-                        <Reanimated.View style={styleAnimation} className="bg-amber-900/50 justify-center items-center w-20 rounded-xl mb-3 h-full absolute right-0 border border-amber-500/30">
-                            <IconSymbol name="arrow.triangle.2.circlepath" size={24} color="#F59E0B" />
-                            {/* Optional label if space permits, but icon is cleaner */}
-                        </Reanimated.View>
-                    );
-                }}
-                onSwipeableOpen={(direction) => {
-                    if (direction === 'left') {
-                        playHaptic('medium'); // Pre-portal haptic
-                        handleSwipe(item.id, item.title, 'completed');
-                    } else if (direction === 'right') {
-                        playSound('recalibrate'); // Specific sound/haptic for recalibration
-                        handleSwipe(item.id, item.title, 'failed');
-                    }
-                }}
-            >
+            {isEditing && (
                 <TouchableOpacity
-                    onPress={() => !item.completed_today && handleHabitPress(item)}
-                    onLongPress={() => {
-                        playHaptic('medium');
-                        handleDeleteHabit(item);
-                    }}
-                    activeOpacity={item.completed_today ? 1 : 0.7}
-                    delayLongPress={250}
+                    onPress={() => handleDeleteHabit(item)}
+                    className="bg-red-500/10 border border-red-500/50 w-10 h-10 rounded-full items-center justify-center"
                 >
-                    <QuestCard
-                        habit={item}
-                        onComplete={() => handleSwipe(item.id, item.title, 'completed')}
-                        onFail={() => handleSwipe(item.id, item.title, 'failed')}
-                    />
+                    <IconSymbol name="trash.fill" size={16} color="#EF4444" />
                 </TouchableOpacity>
-            </ReanimatedSwipeable>
+            )}
+
+            <View style={{ flex: 1 }}>
+                <ReanimatedSwipeable
+                    containerStyle={{ width: '100%' }}
+                    friction={2}
+                    enableTrackpadTwoFingerGesture
+                    rightThreshold={40}
+                    leftThreshold={40}
+                    enabled={!item.completed_today && !isEditing} // Disable swipe if completed OR editing
+                    renderLeftActions={(_prog, drag) => {
+                        const styleAnimation = useAnimatedStyle(() => ({
+                            transform: [{ translateX: drag.value - 80 }],
+                        }));
+                        return (
+                            <Reanimated.View style={styleAnimation} className="bg-emerald-900/50 justify-center items-center w-20 rounded-xl mb-3 h-full absolute left-0">
+                                <IconSymbol name="checkmark.circle.fill" size={24} color="#10B981" />
+                            </Reanimated.View>
+                        );
+                    }}
+                    renderRightActions={(_prog, drag) => {
+                        const styleAnimation = useAnimatedStyle(() => ({
+                            transform: [{ translateX: drag.value + 80 }],
+                        }));
+                        return (
+                            <Reanimated.View style={styleAnimation} className="bg-amber-900/50 justify-center items-center w-20 rounded-xl mb-3 h-full absolute right-0 border border-amber-500/30">
+                                <IconSymbol name="arrow.triangle.2.circlepath" size={24} color="#F59E0B" />
+                            </Reanimated.View>
+                        );
+                    }}
+                    onSwipeableOpen={(direction) => {
+                        if (direction === 'left') {
+                            playHaptic('medium');
+                            handleSwipe(item.id, item.title, 'completed');
+                        } else if (direction === 'right') {
+                            playSound('recalibrate');
+                            handleSwipe(item.id, item.title, 'failed');
+                        }
+                    }}
+                >
+                    <TouchableOpacity
+                        activeOpacity={1}
+                    // Disabled press actions as requested to remove "Visual Mode"
+                    // onPress={() => !item.completed_today && !isEditing && handleHabitPress(item)}
+                    >
+                        <QuestCard
+                            habit={item}
+                            onComplete={() => !isEditing && handleSwipe(item.id, item.title, 'completed')}
+                            onFail={() => !isEditing && handleSwipe(item.id, item.title, 'failed')}
+                        />
+                    </TouchableOpacity>
+                </ReanimatedSwipeable>
+            </View>
         </Reanimated.View>
     );
 
@@ -212,13 +222,27 @@ export const HabitList = () => {
                 >
                     PROTOCOLOS DIARIOS
                 </Text>
-                <View className="bg-[#1A1110] px-3 py-1 rounded border border-[#F97316]">
-                    <Text className="text-[#F97316] font-bold text-[10px] tracking-widest">{filteredHabits.length} ACTIVOS</Text>
+
+                <View className="flex-row items-center gap-3">
+                    <TouchableOpacity
+                        onPress={() => setIsEditing(!isEditing)}
+                        className={`px-3 py-1 rounded border ${isEditing ? 'bg-red-500/20 border-red-500' : 'bg-[#1A1110] border-[#F97316]'}`}
+                    >
+                        <Text className={`${isEditing ? 'text-red-500' : 'text-[#F97316]'} font-bold text-[10px] tracking-widest`}>
+                            {isEditing ? 'LISTO' : 'EDITAR'}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {!isEditing && (
+                        <View className="bg-[#1A1110] px-3 py-1 rounded border border-[#F97316]">
+                            <Text className="text-[#F97316] font-bold text-[10px] tracking-widest">{filteredHabits.length} ACTIVOS</Text>
+                        </View>
+                    )}
                 </View>
             </View>
 
-            <View className="px-4 mb-2">
-                <Text className="text-text-tertiary text-[10px] text-right italic">Mantén presionado para eliminar</Text>
+            <View className="px-4 mb-2 h-4">
+                {isEditing && <Text className="text-red-500 text-[10px] text-right italic font-bold">Toca el ícono de basura para eliminar</Text>}
             </View>
 
             <View style={{ minHeight: 200, flex: 1 }}>

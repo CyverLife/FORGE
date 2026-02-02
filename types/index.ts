@@ -80,3 +80,6 @@ export interface VisionSlide {
     image_url?: string;
     theme_color: string;
 }
+
+export * from './squad';
+

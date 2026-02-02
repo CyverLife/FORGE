@@ -4,6 +4,7 @@ import { PortalDecisionType, usePortalDecision } from '@/hooks/usePortalDecision
 import { useSoundSystem } from '@/hooks/useSoundSystem';
 import { getConsciousnessMessage } from '@/lib/consciousness-messages';
 import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useMemo } from 'react';
 import { Modal, Text, TouchableOpacity, View } from 'react-native';
@@ -117,10 +118,18 @@ export const PortalDecisionModal: React.FC<PortalDecisionModalProps> = ({
         >
             <View className="flex-1 bg-black/90 justify-center items-center px-6">
                 <Animated.View style={portalStyle} className="w-full max-w-md">
+                    {/* Exit Button */}
+                    <TouchableOpacity
+                        onPress={onClose}
+                        className="absolute top-0 right-0 p-2 opacity-50 active:opacity-100 z-50"
+                    >
+                        <IconSymbol name="xmark.circle.fill" size={24} color="white" />
+                    </TouchableOpacity>
+
                     {/* Portal Question */}
-                    <View className="items-center mb-8">
-                        <Text className="text-text-primary font-black text-2xl text-center mb-2 font-display">
-                            ¿ESTA DECISIÓN HACE QUE TU PORTAL...?
+                    <View className="items-center mb-8 mt-4">
+                        <Text className="text-text-primary font-black text-2xl text-center mb-2 font-display uppercase italic">
+                            ¿Entrar al Portal?
                         </Text>
                         {habitTitle && (
                             <Text className="text-text-secondary text-sm text-center">
@@ -155,8 +164,12 @@ export const PortalDecisionModal: React.FC<PortalDecisionModalProps> = ({
                                 />
                             </Animated.View>
 
-                            {/* Portal Icon */}
-                            <Text style={{ fontSize: 80 }}>🌀</Text>
+                            {/* Portal Image */}
+                            <Image
+                                source={require('@/assets/images/portal_texture.png')}
+                                style={{ width: 140, height: 140 }}
+                                contentFit="contain"
+                            />
                         </View>
                     </View>
 

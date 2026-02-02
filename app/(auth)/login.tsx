@@ -1,6 +1,9 @@
 import { GradientBackground } from '@/components/ui/GradientBackground';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { SkiaGlassPane } from '@/components/ui/SkiaGlassPane';
+
+import { useGlobalAlert } from '@/context/GlobalAlertContext';
+
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { supabase } from '@/lib/supabase';
 import { Image } from 'expo-image';
 import { Stack, useRouter } from 'expo-router';
@@ -9,11 +12,21 @@ import { Alert, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacit
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAuth } from '@/hooks/useAuth';
+
 export default function AuthScreen() {
+    const { showAlert } = useGlobalAlert();
+    const { session } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    React.useEffect(() => {
+        if (session) {
+            router.replace('/(tabs)');
+        }
+    }, [session]);
 
     async function signInWithEmail() {
         setLoading(true);
@@ -22,7 +35,11 @@ export default function AuthScreen() {
             password,
         });
 
-        if (error) Alert.alert('Error', error.message);
+        if (error) {
+            Alert.alert('Error', error.message);
+        } else {
+            router.replace('/(tabs)');
+        }
         setLoading(false);
     }
 
@@ -36,8 +53,8 @@ export default function AuthScreen() {
             password,
         });
 
-        if (error) Alert.alert('Error', error.message);
-        else if (!session) Alert.alert('Éxito', 'Revisa tu correo para verificar tu cuenta');
+        if (error) showAlert('Error', error.message);
+        else if (!session) showAlert('Éxito', 'Revisa tu correo para verificar tu cuenta');
         setLoading(false);
     }
 

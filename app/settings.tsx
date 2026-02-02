@@ -1,4 +1,6 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useGlobalAlert } from '@/context/GlobalAlertContext';
+
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import { pickImageFromLibrary, uploadImageToSupabase } from '@/utils/image-uploader';
@@ -19,6 +21,7 @@ import { BlurView } from 'expo-blur';
 import { Modal, Pressable } from 'react-native';
 
 export default function SettingsScreen() {
+    const { showAlert } = useGlobalAlert();
     const { user, session } = useAuth();
     const { level, streak } = useGamification();
     const { showToast } = useToast();
@@ -44,32 +47,37 @@ export default function SettingsScreen() {
     const handlePickImage = async () => {
         if (!user) return;
 
-        // 1. Pick Image (Square for avatar)
-        const asset = await pickImageFromLibrary([1, 1]);
-        if (!asset || !asset.base64) return;
+        try {
+            // 1. Pick Image (Square for avatar)
+            const asset = await pickImageFromLibrary([1, 1]);
+            if (!asset || !asset.base64) return;
 
-        // 2. Upload
-        setUploading(true);
-        const publicUrl = await uploadImageToSupabase(
-            user.id,
-            'avatars',
-            asset.base64,
-            asset.mimeType || 'image/jpeg'
-        );
+            // 2. Upload
+            setUploading(true);
+            const publicUrl = await uploadImageToSupabase(
+                user.id,
+                'avatars',
+                asset.base64,
+                asset.mimeType || 'image/jpeg'
+            );
 
-        if (publicUrl) {
-            // 3. Update Auth Profile
-            const { error: updateError } = await supabase.auth.updateUser({
-                data: { avatar_url: publicUrl }
-            });
+            if (publicUrl) {
+                // 3. Update Auth Profile
+                const { error: updateError } = await supabase.auth.updateUser({
+                    data: { avatar_url: publicUrl }
+                });
 
-            if (updateError) {
-                showToast('Error', 'No se pudo actualizar el perfil', 'error');
-            } else {
-                showToast('Éxito', 'Tu avatar ha sido actualizado', 'success');
+                if (updateError) {
+                    showToast('Error', 'No se pudo actualizar el perfil', 'error');
+                } else {
+                    showToast('Éxito', 'Tu avatar ha sido actualizado', 'success');
+                }
             }
+        } catch (error: any) {
+            showAlert('Error', error.message);
+        } finally {
+            setUploading(false);
         }
-        setUploading(false);
     };
 
     const saveName = async () => {

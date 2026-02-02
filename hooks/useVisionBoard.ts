@@ -1,4 +1,6 @@
+import { useGlobalAlert } from '@/context/GlobalAlertContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState } from 'react';
@@ -13,9 +15,18 @@ export interface VisionEntry {
     title: string;
     rotation: number;
     createdAt: number;
+    textStyle?: {
+        color1: string;          // First word color
+        color2: string;          // Rest of text color
+        fontSize1: number;       // First word size
+        fontSize2: number;       // Rest of text size
+        fontFamily: 'display' | 'body' | 'label';
+        position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'center';
+    };
 }
 
 export const useVisionBoard = () => {
+    const { showAlert } = useGlobalAlert();
     const [visions, setVisions] = useState<VisionEntry[]>([]);
     const [currentId, setCurrentId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -61,7 +72,7 @@ export const useVisionBoard = () => {
 
     const addVision = async () => {
         if (visions.length >= 3) {
-            Alert.alert('Límite alcanzado', 'Solo puedes tener 3 visiones activas. Elimina una para agregar otra.');
+            showAlert('Límite alcanzado', 'Solo puedes tener 3 visiones activas. Elimina una para agregar otra.');
             return;
         }
 
@@ -110,6 +121,14 @@ export const useVisionBoard = () => {
                 title: title.toUpperCase(),
                 rotation: Math.random() * 6 - 3, // -3 to +3
                 createdAt: Date.now(),
+                textStyle: {
+                    color1: '#3B82F6',     // blue-500
+                    color2: '#FFFFFF',     // white
+                    fontSize1: 36,
+                    fontSize2: 28,
+                    fontFamily: 'display',
+                    position: 'bottom-right'
+                }
             };
 
             console.log('🖼️ Vision Board - New vision created:');
@@ -127,12 +146,12 @@ export const useVisionBoard = () => {
             }
         } catch (error) {
             console.error('Add Vision Error:', error);
-            Alert.alert('Error', 'No se pudo guardar la imagen.');
+            showAlert('Error', 'No se pudo guardar la imagen.');
         }
     };
 
     const deleteVision = (id: string) => {
-        Alert.alert(
+        showAlert(
             'Eliminar Visión',
             '¿Estás seguro de que quieres borrar esta visión?',
             [
@@ -171,8 +190,17 @@ export const useVisionBoard = () => {
         saveState(visions, id);
     };
 
-    const updateTitle = (id: string, newTitle: string) => {
-        const updatedVisions = visions.map(v => v.id === id ? { ...v, title: newTitle.toUpperCase() } : v);
+    const updateVision = (id: string, updates: Partial<VisionEntry>) => {
+        const updatedVisions = visions.map(v => {
+            if (v.id === id) {
+                return {
+                    ...v,
+                    ...updates,
+                    title: updates.title ? updates.title.toUpperCase() : v.title
+                };
+            }
+            return v;
+        });
         setVisions(updatedVisions);
         saveState(updatedVisions, currentId);
     };
@@ -186,6 +214,6 @@ export const useVisionBoard = () => {
         addVision,
         deleteVision,
         selectVision,
-        updateTitle,
+        updateVision,
     };
 };

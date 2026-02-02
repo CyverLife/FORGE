@@ -138,18 +138,48 @@ export default function LeaderboardScreen() {
                     </Animated.View>
 
                     {/* Coming Soon Section */}
-                    <View className="px-6 opacity-60">
-                        <Text className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-4">PRÓXIMAMENTE</Text>
-                        {[1, 2, 3].map((_, i) => (
-                            <View key={i} className="mb-3 flex-row items-center gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
-                                <View className="w-8 h-8 rounded-full bg-white/5 items-center justify-center">
-                                    <Text className="text-gray-500 font-bold">{i + 2}</Text>
+                    {/* Global Leaderboard - TOP AGENTS */}
+                    <View className="px-6 mb-12">
+                        <View className="flex-row items-center justify-between mb-4">
+                            <Text className="text-white/40 text-[10px] font-bold uppercase tracking-widest">TOP AGENTES GLOBALES</Text>
+                            <TouchableOpacity>
+                                <Text className="text-forge-orange text-[10px] font-bold uppercase">VER TODOS</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        {[
+                            { rank: 1, name: 'CYBERMONK', score: 9850, streak: 142, color: 'text-yellow-400', border: 'border-yellow-500/50' },
+                            { rank: 2, name: 'NEON_NINJA', score: 8720, streak: 89, color: 'text-gray-300', border: 'border-gray-400/50' },
+                            { rank: 3, name: 'VOID_WALKER', score: 8450, streak: 76, color: 'text-orange-400', border: 'border-orange-500/50' },
+                            { rank: 4, name: 'ZEN_MASTER', score: 7200, streak: 45, color: 'text-white/60', border: 'border-white/10' },
+                            { rank: 5, name: 'QUANTUM_LZ', score: 6980, streak: 32, color: 'text-white/60', border: 'border-white/10' },
+                        ].map((agent, i) => (
+                            <View
+                                key={i}
+                                className={`flex-row items-center bg-white/5 p-4 rounded-xl border mb-3 ${agent.border} ${i < 3 ? 'bg-gradient-to-r from-white/10 to-transparent' : 'border-white/5'}`}
+                            >
+                                <View className="w-8 items-center justify-center mr-4">
+                                    <Text className={`font-black text-lg ${agent.color} font-display italic`}>#{agent.rank}</Text>
                                 </View>
-                                <View className="h-2 w-24 bg-white/10 rounded-full" />
-                                <View className="ml-auto w-16 h-2 bg-white/5 rounded-full" />
+
+                                {/* Generic Avatar Placeholder since we don't have URLs for them */}
+                                <View className={`w-10 h-10 rounded-lg items-center justify-center border ${agent.border} bg-white/5 mr-4`}>
+                                    <Text className="text-white font-bold text-xs">{agent.name.substring(0, 2)}</Text>
+                                </View>
+
+                                <View className="flex-1">
+                                    <Text className={`font-bold text-sm ${i < 3 ? 'text-white' : 'text-gray-400'} tracking-wide`}>{agent.name}</Text>
+                                    <Text className="text-xs text-gray-600 font-medium">Nivel {Math.floor(agent.score / 1000) + 10} • {agent.streak} días racha</Text>
+                                </View>
+
+                                <View>
+                                    <Text className="text-white font-bold text-sm">{agent.score.toLocaleString()}</Text>
+                                    <Text className="text-[8px] text-right text-forge-orange font-bold uppercase">XP</Text>
+                                </View>
                             </View>
                         ))}
                     </View>
+
 
                 </ScrollView>
             </GradientBackground>

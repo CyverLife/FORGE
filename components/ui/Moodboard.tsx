@@ -1,9 +1,11 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useGlobalAlert } from '@/context/GlobalAlertContext';
+
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useState } from 'react';
-import { Alert, FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import { GlassPane } from '../ui/GlassPane';
 
 interface MoodBoardImage {
@@ -13,6 +15,7 @@ interface MoodBoardImage {
 }
 
 export const Moodboard = () => {
+    const { showAlert } = useGlobalAlert();
     const { session } = useAuth();
     const [images, setImages] = useState<MoodBoardImage[]>([]);
     const [uploading, setUploading] = useState(false);
@@ -64,7 +67,7 @@ export const Moodboard = () => {
 
             fetchImages();
         } catch (error) {
-            Alert.alert('Upload Failed', 'Could not upload vision.');
+            showAlert('Upload Failed', 'Could not upload vision.');
         } finally {
             setUploading(false);
         }
