@@ -37,13 +37,18 @@ function decode(base64: string) {
     return arraybuffer;
 }
 
-export const pickImageFromLibrary = async () => {
+export const pickImageFromLibrary = async (aspect: [number, number] = [4, 3]) => {
     try {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería para cambiar tu avatar.');
+            return null;
+        }
+
         const result = await ImagePicker.launchImageLibraryAsync({
-            // @ts-ignore
-            mediaTypes: ImagePicker.MediaType.Images,
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true, // Allow cropping for better layout fitting
-            aspect: [4, 3], // Standard moodboard aspect
+            aspect: aspect, // Use passed aspect ratio
             quality: 0.5, // Compress for speed
             base64: true,
         });

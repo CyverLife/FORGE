@@ -15,6 +15,7 @@ export interface GamificationState {
     consciousnessLevel: number;
     angelScore: number;
     simioScore: number;
+    streak: number;
 }
 
 export function useGamification() {
@@ -30,6 +31,7 @@ export function useGamification() {
         consciousnessLevel: 1,
         angelScore: 0,
         simioScore: 0,
+        streak: 0,
     });
 
     // Helper to keep Rank logic consistent locally
@@ -57,7 +59,7 @@ export function useGamification() {
         const fetchStats = async () => {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('level, xp, anti_gravity_score, angel_score, simio_score, consciousness_rank, consciousness_level')
+                .select('level, xp, anti_gravity_score, angel_score, simio_score, consciousness_rank, consciousness_level, current_streak')
                 .eq('id', session.user.id)
                 .single();
 
@@ -65,6 +67,7 @@ export function useGamification() {
                 const angelScore = data.angel_score || 0;
                 const simioScore = data.simio_score || 0;
                 const antiGravityScore = data.anti_gravity_score || 0;
+                const streak = data.current_streak || 0;
 
                 const newState: GamificationState = {
                     level: data.level || 1,
@@ -77,6 +80,7 @@ export function useGamification() {
                     consciousnessLevel: data.consciousness_level || 1,
                     angelScore,
                     simioScore,
+                    streak,
                 };
                 setStats(newState);
                 await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(newState));
@@ -104,6 +108,7 @@ export function useGamification() {
                             const angelScore = newData.angel_score ?? prev.angelScore;
                             const simioScore = newData.simio_score ?? prev.simioScore;
                             const antiGravityScore = newData.anti_gravity_score ?? prev.antiGravityScore;
+                            const streak = newData.current_streak ?? prev.streak;
 
                             return {
                                 ...prev,
@@ -116,6 +121,7 @@ export function useGamification() {
                                 consciousnessLevel: newData.consciousness_level ?? prev.consciousnessLevel,
                                 angelScore,
                                 simioScore,
+                                streak,
                             };
                         });
                     }
@@ -135,7 +141,8 @@ export function useGamification() {
             level: 1,
             xp: 0,
             prestige: stats.prestige + 1,
-            rank: 'BRONZE' as const
+            rank: 'BRONZE' as const,
+            streak: 0
         };
         setStats(newState);
         // In real app, would call Supabase RPC 'rebirth_user'

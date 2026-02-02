@@ -20,6 +20,8 @@ export const unstable_settings = {
 // import { registerForPushNotificationsAsync, scheduleDailyReminder } from '@/utils/notifications';
 // import { useEffect } from 'react';
 
+import { ToastProvider } from '@/context/ToastContext';
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
@@ -36,18 +38,20 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryProvider>
-        <AuthProvider>
-          <NavThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <Stack>
-              <Stack.Screen name="splash" options={{ headerShown: false }} />
-              <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-            </Stack>
-            <StatusBar style="light" />
-          </NavThemeProvider>
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <NavThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+              <Stack>
+                <Stack.Screen name="splash" options={{ headerShown: false }} />
+                <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+              </Stack>
+              <StatusBar style="light" />
+            </NavThemeProvider>
+          </AuthProvider>
+        </ToastProvider>
       </QueryProvider>
     </GestureHandlerRootView>
   );
