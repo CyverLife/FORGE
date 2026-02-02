@@ -8,7 +8,7 @@ interface PortalDecision {
     id: string;
     user_id: string;
     habit_id?: string;
-    decision_type: PortalDecisionType;
+    type: 'ANGEL' | 'APE';
     context?: string;
     created_at: string;
 }
@@ -34,7 +34,7 @@ export const usePortalDecision = () => {
                 .insert({
                     user_id: session.user.id,
                     habit_id: habitId,
-                    decision_type: decisionType,
+                    type: decisionType === 'BRIGHTEN' ? 'ANGEL' : 'APE', // Map Frontend 'BRIGHTEN/DARKEN' to DB 'ANGEL/APE'
                     context: context || null,
                 })
                 .select()
@@ -83,15 +83,15 @@ export const usePortalDecision = () => {
 
         const { data, error } = await supabase
             .from('portal_decisions')
-            .select('decision_type')
+            .select('type')
             .eq('user_id', session.user.id);
 
         if (error || !data) {
             return { brighten: 0, darken: 0, coherence: 50 };
         }
 
-        const brighten = data.filter(d => d.decision_type === 'BRIGHTEN').length;
-        const darken = data.filter(d => d.decision_type === 'DARKEN').length;
+        const brighten = data.filter(d => d.type === 'ANGEL').length;
+        const darken = data.filter(d => d.type === 'APE').length;
         const total = brighten + darken;
         const coherence = total > 0 ? Math.round((brighten / total) * 100) : 50;
 
