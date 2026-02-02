@@ -1,7 +1,11 @@
+import { useAuth } from '@/hooks/useAuth';
 import { useHabits } from '@/hooks/useHabits';
 import { Habit } from '@/types';
+import { pickImageFromLibrary, uploadImageToSupabase } from '@/utils/image-uploader';
+import { Image } from 'expo-image';
 import React, { useState } from 'react';
-import { Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { IconSymbol } from './icon-symbol';
 
 interface CreateHabitModalProps {
     visible: boolean;
@@ -17,12 +21,33 @@ const ATTRIBUTES = [
 
 export const CreateHabitModal = ({ visible, onClose }: CreateHabitModalProps) => {
     const { addHabit } = useHabits();
+    const { user } = useAuth();
     const [title, setTitle] = useState('');
     const [selectedAttribute, setSelectedAttribute] = useState<Habit['attribute']>('FIRE');
     const [difficulty, setDifficulty] = useState(1);
     const [narrative, setNarrative] = useState('');
     const [visualMood, setVisualMood] = useState('');
     const [loading, setLoading] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
+
+    const handlePickImage = async () => {
+        if (!user) return;
+
+        const asset = await pickImageFromLibrary();
+        if (asset && asset.base64) {
+            setUploadingImage(true);
+            const publicUrl = await uploadImageToSupabase(
+                user.id,
+                'habit-images', // Ensure this bucket exists or use 'avatars' temporarily if 'habit-images' is not created
+                asset.base64,
+                asset.mimeType || 'image/jpeg'
+            );
+            if (publicUrl) {
+                setVisualMood(publicUrl);
+            }
+            setUploadingImage(false);
+        }
+    };
 
     const handleCreate = async () => {
         if (!title.trim()) return;
@@ -132,17 +157,38 @@ export const CreateHabitModal = ({ visible, onClose }: CreateHabitModalProps) =>
                     </View>
 
 
-                    {/* Moodboard URL Input */}
+
+                    {/* Moodboard Image Picker */}
                     <View className="mb-8">
-                        <Text className="text-gray-500 mb-2 font-bold tracking-widest text-[10px] uppercase">VISUAL MOOD (URL IMAGEN)</Text>
-                        <TextInput
-                            className="bg-white/5 text-white p-4 rounded-xl border border-white/10"
-                            placeholder="https://..."
-                            placeholderTextColor="#666"
-                            value={visualMood}
-                            onChangeText={setVisualMood}
-                            autoCapitalize="none"
-                        />
+                        <Text className="text-gray-500 mb-2 font-bold tracking-widest text-[10px] uppercase">VISUAL MOOD (GALERÍA)</Text>
+
+                        <TouchableOpacity
+                            onPress={handlePickImage}
+                            disabled={uploadingImage}
+                            className="w-full h-40 bg-white/5 rounded-xl border border-white/10 items-center justify-center overflow-hidden active:bg-white/10"
+                        >
+                            {visualMood ? (
+                                <Image
+                                    source={{ uri: visualMood }}
+                                    style={{ width: '100%', height: '100%' }}
+                                    contentFit="cover"
+                                />
+                            ) : (
+                                <View className="items-center opacity-50">
+                                    <IconSymbol name="photo.fill" size={32} color="white" />
+                                    <Text className="text-white text-xs mt-2 font-bold tracking-widest uppercase">
+                                        {uploadingImage ? 'SUBIENDO...' : 'SELECCIONAR IMAGEN'}
+                                    </Text>
+                                    {uploadingImage && <ActivityIndicator color="#fff" style={{ marginTop: 8 }} />}
+                                </View>
+                            )}
+                        </TouchableOpacity>
+
+                        {visualMood ? (
+                            <TouchableOpacity onPress={() => setVisualMood('')} className="mt-2 self-end">
+                                <Text className="text-red-400 text-[10px] font-bold uppercase tracking-widest">ELIMINAR</Text>
+                            </TouchableOpacity>
+                        ) : null}
                     </View>
 
                     {/* Submit Button - Forge Style */}

@@ -199,7 +199,14 @@ export const HabitList = () => {
         <>
             {/* Context Header */}
             <View className="flex-row justify-between items-center px-4 mb-4">
-                <Text className="text-white font-black italic text-xl uppercase tracking-tighter shadow-black shadow-lg font-mono">
+                <Text
+                    className="text-white font-black italic text-xl uppercase tracking-tighter font-mono"
+                    style={{
+                        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+                        textShadowOffset: { width: 0, height: 4 },
+                        textShadowRadius: 10
+                    }}
+                >
                     PROTOCOLOS DIARIOS
                 </Text>
                 <View className="bg-[#1A1110] px-3 py-1 rounded border border-[#F97316]">

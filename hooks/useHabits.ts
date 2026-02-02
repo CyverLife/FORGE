@@ -121,9 +121,12 @@ export function useHabits() {
         if (!session?.user) return;
 
         try {
+            // Sanitize: Remove frontend-only properties that don't exist in DB
+            const { completed_today, streak, consistency, points, xp_reward, ...habitData } = habit;
+
             const { data, error } = await supabase
                 .from('habits')
-                .insert([{ ...habit, user_id: session.user.id }])
+                .insert([{ ...habitData, user_id: session.user.id }])
                 .select()
                 .single();
 
@@ -140,7 +143,8 @@ export function useHabits() {
             }
 
             if (data) {
-                setHabits((prev) => [data as Habit, ...prev]);
+                // Force a refetch to ensure consistent state and handle potential triggers
+                await fetchHabits();
                 return data;
             }
         } catch (e) {
