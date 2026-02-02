@@ -29,7 +29,8 @@ export const Moodboard = () => {
 
     const pickImage = async () => {
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            // @ts-ignore
+            mediaTypes: ImagePicker.MediaType.Images,
             allowsEditing: true,
             aspect: [4, 3],
             quality: 0.8,
@@ -77,7 +78,7 @@ export const Moodboard = () => {
             <View className="flex-row justify-between items-center mb-6 px-2">
                 <View className="flex-1 mr-4">
                     <Text className="text-white font-bold text-2xl tracking-[2px]">VISION OF LIFE</Text>
-                    <GlassPane className="mt-2 p-3 rounded-lg border border-white/5" opacity={0.05}>
+                    <GlassPane className="mt-2 p-3 rounded-lg border border-white/5">
                         <Text className="text-gray-400 text-[10px] italic leading-relaxed">
                             "THE SCULPTOR PARADOX: Without a vision, you chisel at random. Define your masterpiece or risk becoming a shapeless rock."
                         </Text>
@@ -94,7 +95,7 @@ export const Moodboard = () => {
                 keyExtractor={(item) => item.id}
                 columnWrapperStyle={{ justifyContent: 'space-between' }}
                 renderItem={({ item }) => (
-                    <GlassPane className="w-[48%] h-40 mb-4 rounded-xl overflow-hidden border border-white/5" opacity={0.1}>
+                    <GlassPane className="w-[48%] h-40 mb-4 rounded-xl overflow-hidden border border-white/5">
                         <Image source={{ uri: item.image_url }} className="w-full h-full opacity-80" resizeMode="cover" />
                     </GlassPane>
                 )}

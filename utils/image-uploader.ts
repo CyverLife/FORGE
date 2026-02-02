@@ -40,7 +40,8 @@ function decode(base64: string) {
 export const pickImageFromLibrary = async () => {
     try {
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            // @ts-ignore
+            mediaTypes: ImagePicker.MediaType.Images,
             allowsEditing: true, // Allow cropping for better layout fitting
             aspect: [4, 3], // Standard moodboard aspect
             quality: 0.5, // Compress for speed
