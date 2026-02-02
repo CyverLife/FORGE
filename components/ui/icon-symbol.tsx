@@ -1,7 +1,7 @@
 // Fallback for using MaterialIcons on Android and web.
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
+import { SymbolViewProps, SymbolWeight } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
@@ -14,10 +14,32 @@ type IconSymbolName = keyof typeof MAPPING;
  * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
  */
 const MAPPING = {
+  // Existing
   'house.fill': 'home',
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'chevron.left': 'chevron-left',
+
+  // RPG UI Additions
+  'gear': 'settings',
+  'square.and.arrow.up': 'share',
+  'flame.fill': 'local-fire-department',
+  'dumbbell.fill': 'fitness-center',
+  'crown.fill': 'emoji-events',
+  'book.fill': 'menu-book',
+  'heart.fill': 'favorite',
+  'star.fill': 'star',
+  'calendar': 'calendar-today',
+  'checkmark.circle.fill': 'check-circle',
+  'trophy.fill': 'emoji-events',
+  'eye.fill': 'visibility',
+  'bolt.fill': 'flash-on',
+  'slider.horizontal.3': 'tune',
+  'plus': 'add',
+  'checkmark': 'check',
+  'xmark.circle.fill': 'cancel',
+  'brain.head.profile': 'psychology',
 } as IconMapping;
 
 /**

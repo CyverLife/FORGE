@@ -1,4 +1,4 @@
-import { BlurMask, Canvas, Circle, Paint, RadialGradient, vec } from '@shopify/react-native-skia';
+import { Canvas, Circle, Paint, RadialGradient, vec } from '@shopify/react-native-skia';
 import React, { useEffect } from 'react';
 import { Dimensions, View } from 'react-native';
 import { Easing, useDerivedValue, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
@@ -44,22 +44,42 @@ export const AntiGravityEngine = ({ active = true, intensity = 0.5 }: AntiGravit
     return (
         <View style={{ width: width, height: height * 0.5, alignItems: 'center', justifyContent: 'center' }}>
             <Canvas style={{ flex: 1, width: width }}>
-                {/* Background Particles */}
+                {/* Background Particles - No BlurMask */}
                 {particles.map((p, i) => (
                     <Circle key={i} cx={p.x} cy={p.y} r={p.r}>
-                        <Paint color={active ? CORE_COLOR : INACTIVE_COLOR} opacity={0.2} />
-                        <BlurMask blur={2} style="normal" />
+                        <Paint color={active ? CORE_COLOR : INACTIVE_COLOR} opacity={0.3} />
                     </Circle>
                 ))}
 
-                {/* Glow Effect */}
+                {/* Outer Glow Layers - Multiple circles for glow effect */}
                 <Circle cx={CENTER.x} cy={CENTER.y} r={radius}>
                     <RadialGradient
                         c={CENTER}
-                        r={120}
+                        r={radius}
+                        colors={[active ? CORE_COLOR : INACTIVE_COLOR, 'transparent']}
+                        positions={[0, 1]}
+                    />
+                    <Paint opacity={0.15} />
+                </Circle>
+
+                <Circle cx={CENTER.x} cy={CENTER.y} r={radius}>
+                    <RadialGradient
+                        c={CENTER}
+                        r={radius}
+                        colors={[active ? CORE_COLOR : INACTIVE_COLOR, 'transparent']}
+                        positions={[0.3, 1]}
+                    />
+                    <Paint opacity={0.2} />
+                </Circle>
+
+                {/* Mid Glow */}
+                <Circle cx={CENTER.x} cy={CENTER.y} r={70}>
+                    <RadialGradient
+                        c={CENTER}
+                        r={90}
                         colors={[active ? CORE_COLOR : INACTIVE_COLOR, 'transparent']}
                     />
-                    <BlurMask blur={30} style="normal" />
+                    <Paint opacity={0.4} />
                 </Circle>
 
                 {/* Core Sphere */}

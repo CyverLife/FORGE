@@ -1,101 +1,94 @@
 -- Enable UUID extension
 create extension if not exists "uuid-ossp";
 
--- PROFILES
+-- 1. PROFILES (Extends auth.users)
 create table public.profiles (
   id uuid references auth.users not null primary key,
   username text,
   avatar_url text,
   level integer default 1,
   xp integer default 0,
-  anti_gravity_score integer default 0,
-  subscription_status text check (subscription_status in ('free', 'premium')) default 'free',
-  updated_at timestamp with time zone,
-  
-  constraint username_length check (char_length(username) >= 3)
+  anti_gravity_score integer default 50, -- Starting balance
+  subscription_status text default 'free' check (subscription_status in ('free', 'premium')),
+  updated_at timestamp with time zone default timezone('utc'::text, now())
 );
 
+-- RLS for Profiles
 alter table public.profiles enable row level security;
+create policy "Users can view their own profile" on public.profiles for select using (auth.uid() = id);
+create policy "Users can update their own profile" on public.profiles for update using (auth.uid() = id);
+create policy "Users can insert their own profile" on public.profiles for insert with check (auth.uid() = id);
 
-create policy "Public profiles are viewable by everyone." on public.profiles
-  for select using (true);
-
-create policy "Users can insert their own profile." on public.profiles
-  for insert with check (auth.uid() = id);
-
-create policy "Users can update own profile." on public.profiles
-  for update using (auth.uid() = id);
-
--- HABITS
-create table public.habits (
-  id uuid default uuid_generate_v4() primary key,
-  user_id uuid references public.profiles(id) not null,
-  title text not null,
-  attribute text check (attribute in ('IRON', 'FIRE', 'STEEL', 'FOCUS')),
-  frequency text[], -- Array of days
-  difficulty integer check (difficulty between 1 and 5),
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table public.habits enable row level security;
-
-create policy "Individuals can create habits." on public.habits
-  for insert with check (auth.uid() = user_id);
-
-create policy "Individuals can view their own habits. " on public.habits
-  for select using (auth.uid() = user_id);
-
-create policy "Individuals can update their own habits." on public.habits
-  for update using (auth.uid() = user_id);
-
-create policy "Individuals can delete their own habits." on public.habits
-  for delete using (auth.uid() = user_id);
-
--- LOGS
-create table public.logs (
-  id uuid default uuid_generate_v4() primary key,
-  habit_id uuid references public.habits(id) on delete cascade not null,
-  completed_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  status text check (status in ('completed', 'failed', 'skipped')),
-  note text
-);
-
-alter table public.logs enable row level security;
-
-create policy "Individuals can create logs." on public.logs
-  for insert with check (auth.uid() = (select user_id from public.habits where id = habit_id));
-
-create policy "Individuals can view their own logs." on public.logs
-  for select using (auth.uid() = (select user_id from public.habits where id = habit_id));
-
--- DECISIONS
-create table public.decisions (
-  id uuid default uuid_generate_v4() primary key,
-  user_id uuid references public.profiles(id) not null,
-  type text check (type in ('ANGEL', 'APE')),
-  context text,
-  timestamp timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table public.decisions enable row level security;
-
-create policy "Individuals can create decisions." on public.decisions
-  for insert with check (auth.uid() = user_id);
-
-create policy "Individuals can view their own decisions." on public.decisions
-  for select using (auth.uid() = user_id);
-
--- FUNCTION to handle new user signup
-create or replace function public.handle_new_user()
+-- Trigger to create profile on signup
+create or replace function public.handle_new_user() 
 returns trigger as $$
 begin
-  insert into public.profiles (id, username, avatar_url)
-  values (new.id, new.raw_user_meta_data->>'username', new.raw_user_meta_data->>'avatar_url');
+  insert into public.profiles (id, username, anti_gravity_score)
+  values (new.id, new.email, 50);
   return new;
 end;
 $$ language plpgsql security definer;
 
--- DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- 2. HABITS
+create table public.habits (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references auth.users not null,
+  title text not null,
+  attribute text check (attribute in ('IRON', 'FIRE', 'STEEL', 'FOCUS')),
+  frequency text[] default '{}', -- Array of days e.g. ['Mon', 'Tue']
+  difficulty integer check (difficulty >= 1 and difficulty <= 5),
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+-- RLS for Habits
+alter table public.habits enable row level security;
+create policy "Users can crud their own habits" on public.habits for all using (auth.uid() = user_id);
+
+-- 3. LOGS
+create table public.logs (
+  id uuid default uuid_generate_v4() primary key,
+  habit_id uuid references public.habits on delete cascade not null,
+  user_id uuid references auth.users not null, -- Denormalized for easier RLS
+  completed_at timestamp with time zone default timezone('utc'::text, now()),
+  status text check (status in ('completed', 'failed', 'skipped')),
+  note text
+);
+
+-- RLS for Logs
+alter table public.logs enable row level security;
+create policy "Users can crud their own logs" on public.logs for all using (auth.uid() = user_id);
+
+-- 4. DECISIONS (The missing table causing errors)
+create table public.decisions (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references auth.users not null,
+  type text check (type in ('ANGEL', 'APE')),
+  context text,
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+-- RLS for Decisions
+alter table public.decisions enable row level security;
+create policy "Users can crud their own decisions" on public.decisions for all using (auth.uid() = user_id);
+
+-- 5. GAMIFICATION TRIGGERS
+create or replace function public.handle_new_decision() 
+returns trigger as $$
+begin
+  update public.profiles
+  set 
+    anti_gravity_score = greatest(0, least(100, anti_gravity_score + (case when new.type = 'ANGEL' then 10 else -5 end))),
+    xp = xp + 5,
+    updated_at = now()
+  where id = new.user_id;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create trigger on_decision_created
+  after insert on public.decisions
+  for each row execute procedure public.handle_new_decision();

@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { Session, User } from '@supabase/supabase-js';
 import { useRouter, useSegments } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
@@ -24,12 +25,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
+            SplashScreen.hideAsync();
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
+            SplashScreen.hideAsync();
         });
 
         return () => subscription.unsubscribe();
@@ -57,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         </AuthContext.Provider>
     );
 }
+
 
 export const useAuth = () => {
     const context = useContext(AuthContext);

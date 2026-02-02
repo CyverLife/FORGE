@@ -1,6 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, TouchableOpacityProps } from 'react-native';
-import { styled } from 'nativewind';
+import { Text, TouchableOpacity, TouchableOpacityProps } from 'react-native';
 
 interface ButtonProps extends TouchableOpacityProps {
     variant?: 'primary' | 'secondary' | 'outline';
@@ -21,7 +20,7 @@ export const Button = ({ variant = 'primary', title, className, ...props }: Butt
     };
 
     return (
-        <TouchableOpacity className={`${baseStyle} ${variants[variant]} ${className}`} {...props}>
+        <TouchableOpacity className={`${baseStyle} ${variants[variant]} ${className} z-50`} {...props}>
             <Text className={`${textStyles[variant]} text-lg`}>{title}</Text>
         </TouchableOpacity>
     );

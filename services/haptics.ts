@@ -4,12 +4,12 @@ import { Platform } from 'react-native';
 export const haptics = {
     light: () => {
         if (Platform.OS !== 'web') {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); // Was Light, bumped for weight
         }
     },
     medium: () => {
         if (Platform.OS !== 'web') {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy); // Was Medium
         }
     },
     heavy: () => {

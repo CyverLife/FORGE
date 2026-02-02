@@ -9,6 +9,12 @@ export interface GamificationState {
     xp: number;
     antiGravityScore: number;
     progress: number;
+    rank: 'BRONZE' | 'SILVER' | 'GOLD' | 'INFINITE';
+    prestige: number;
+    consciousnessRank: 'BRONCE' | 'PLATA' | 'ORO' | 'INFINITO';
+    consciousnessLevel: number;
+    angelScore: number;
+    simioScore: number;
 }
 
 export function useGamification() {
@@ -18,7 +24,21 @@ export function useGamification() {
         xp: 0,
         antiGravityScore: 0,
         progress: 0,
+        rank: 'BRONZE',
+        prestige: 0,
+        consciousnessRank: 'BRONCE',
+        consciousnessLevel: 1,
+        angelScore: 0,
+        simioScore: 0,
     });
+
+    // Helper to keep Rank logic consistent locally
+    const calculateRank = (score: number): 'BRONZE' | 'SILVER' | 'GOLD' | 'INFINITE' => {
+        if (score >= 95) return 'INFINITE';
+        if (score >= 75) return 'GOLD';
+        if (score >= 50) return 'SILVER';
+        return 'BRONZE';
+    };
 
     useEffect(() => {
         if (!session?.user) return;
@@ -37,16 +57,26 @@ export function useGamification() {
         const fetchStats = async () => {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('level, xp, anti_gravity_score')
+                .select('level, xp, anti_gravity_score, angel_score, simio_score, consciousness_rank, consciousness_level')
                 .eq('id', session.user.id)
                 .single();
 
             if (data) {
-                const newState = {
+                const angelScore = data.angel_score || 0;
+                const simioScore = data.simio_score || 0;
+                const antiGravityScore = data.anti_gravity_score || 0;
+
+                const newState: GamificationState = {
                     level: data.level || 1,
                     xp: data.xp || 0,
-                    antiGravityScore: data.anti_gravity_score || 0,
+                    antiGravityScore,
                     progress: getProgressToNextLevel(data.xp || 0),
+                    rank: calculateRank(antiGravityScore),
+                    prestige: 0,
+                    consciousnessRank: (data.consciousness_rank as any) || 'BRONCE',
+                    consciousnessLevel: data.consciousness_level || 1,
+                    angelScore,
+                    simioScore,
                 };
                 setStats(newState);
                 await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(newState));
@@ -58,7 +88,7 @@ export function useGamification() {
 
         // Subscribe to realtime updates
         const channel = supabase
-            .channel('gamification')
+            .channel('gamification_updates')
             .on(
                 'postgres_changes',
                 {
@@ -67,16 +97,28 @@ export function useGamification() {
                     table: 'profiles',
                     filter: `id=eq.${session.user.id}`,
                 },
-                (payload) => {
+                async (payload) => {
                     const newData = payload.new;
-                    const newState = {
-                        level: newData.level,
-                        xp: newData.xp,
-                        antiGravityScore: newData.anti_gravity_score,
-                        progress: getProgressToNextLevel(newData.xp),
-                    };
-                    setStats(newState);
-                    AsyncStorage.setItem(CACHE_KEY, JSON.stringify(newState));
+                    if (newData) {
+                        setStats(prev => {
+                            const angelScore = newData.angel_score ?? prev.angelScore;
+                            const simioScore = newData.simio_score ?? prev.simioScore;
+                            const antiGravityScore = newData.anti_gravity_score ?? prev.antiGravityScore;
+
+                            return {
+                                ...prev,
+                                level: newData.level ?? prev.level,
+                                xp: newData.xp ?? prev.xp,
+                                antiGravityScore,
+                                progress: getProgressToNextLevel(newData.xp ?? prev.xp),
+                                rank: calculateRank(antiGravityScore),
+                                consciousnessRank: (newData.consciousness_rank as any) ?? prev.consciousnessRank,
+                                consciousnessLevel: newData.consciousness_level ?? prev.consciousnessLevel,
+                                angelScore,
+                                simioScore,
+                            };
+                        });
+                    }
                 }
             )
             .subscribe();
@@ -84,7 +126,20 @@ export function useGamification() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [session]);
+    }, [session?.user?.id]);
 
-    return stats;
+    const rebirth = async () => {
+        // Mock Rebirth Logic for UI Demo
+        const newState = {
+            ...stats,
+            level: 1,
+            xp: 0,
+            prestige: stats.prestige + 1,
+            rank: 'BRONZE' as const
+        };
+        setStats(newState);
+        // In real app, would call Supabase RPC 'rebirth_user'
+    };
+
+    return { ...stats, rebirth };
 }

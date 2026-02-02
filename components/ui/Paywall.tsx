@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, Modal, TouchableOpacity, ScrollView } from 'react-native';
-import { GlassPane } from './GlassPane';
-import { Button } from './Button';
 import { AntiGravityEngine } from '@/components/skia/AntiGravityEngine';
+import React from 'react';
+import { Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Button } from './Button';
+import { GlassPane } from './GlassPane';
 
 interface PaywallProps {
     visible: boolean;
@@ -10,7 +10,13 @@ interface PaywallProps {
     onPurchase: () => void;
 }
 
-export const Paywall = ({ visible, onClose, onPurchase }: PaywallProps) => {
+import { useRevenueCat } from '@/hooks/useRevenueCat';
+
+export const Paywall = ({ visible, onClose }: { visible: boolean; onClose: () => void }) => {
+    const { currentOffering, purchasePro, restorePurchases, loading } = useRevenueCat();
+
+    const price = currentOffering?.product.priceString || "$4.99";
+
     return (
         <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
             <View className="flex-1 bg-obsidian">
@@ -31,12 +37,23 @@ export const Paywall = ({ visible, onClose, onPurchase }: PaywallProps) => {
                     </View>
 
                     <GlassPane className="p-6 rounded-2xl items-center mb-8" opacity={0.1}>
-                        <Text className="text-white text-3xl font-bold">$4.99<Text className="text-base font-normal text-gray-400">/mo</Text></Text>
+                        <Text className="text-white text-3xl font-bold">{price}<Text className="text-base font-normal text-gray-400">/mo</Text></Text>
                         <Text className="text-gray-400 text-sm mt-2">7-Day Free Trial. Cancel anytime.</Text>
                     </GlassPane>
 
-                    <Button title="Start Free Trial" onPress={onPurchase} className="mb-4" />
-                    <Button title="Restore Purchases" variant="outline" onPress={() => { }} className="mb-4 text-xs" />
+                    <Button
+                        title={loading ? "Processing..." : "Start Free Trial"}
+                        onPress={purchasePro}
+                        className="mb-4"
+                        disabled={loading}
+                    />
+                    <Button
+                        title="Restore Purchases"
+                        variant="outline"
+                        onPress={restorePurchases}
+                        className="mb-4 text-xs"
+                        disabled={loading}
+                    />
 
                     <TouchableOpacity onPress={onClose} className="py-4">
                         <Text className="text-gray-500 text-center font-bold">NO, I CHOOSE MEDIOCRITY</Text>
