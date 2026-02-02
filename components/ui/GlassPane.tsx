@@ -3,19 +3,31 @@ import React from 'react';
 import { StyleSheet, View, ViewProps } from 'react-native';
 
 interface GlassPaneProps extends ViewProps {
-    blurAmount?: number;
-    opacity?: number;
+    intensity?: number;
+    tint?: 'light' | 'dark' | 'default' | 'systemThinMaterialDark' | 'systemMaterialDark' | 'systemThickMaterialDark';
+    borderOpacity?: number;
 }
 
-export const GlassPane = ({ blurAmount = 15, opacity = 0.08, style, children, ...props }: GlassPaneProps) => {
+export const GlassPane = ({
+    intensity = 20,
+    tint = 'systemThinMaterialDark',
+    borderOpacity = 0.1,
+    style,
+    children,
+    ...props
+}: GlassPaneProps) => {
     return (
-        <View style={[styles.container, style]} {...props}>
-            <BlurView intensity={blurAmount * 5} style={StyleSheet.absoluteFill} tint="dark">
-                <View style={[StyleSheet.absoluteFill, { backgroundColor: `rgba(30, 30, 30, ${opacity})` }]} />
-            </BlurView>
-            {/* Subtle inner gloss highlight */}
-            <View style={[StyleSheet.absoluteFill, { borderColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderRadius: 24 }]} />
-            {children}
+        <View style={[styles.container, { borderColor: `rgba(255,255,255,${borderOpacity})` }, style]} {...props}>
+            {/* Main Blur Layer */}
+            <BlurView intensity={intensity} style={StyleSheet.absoluteFill} tint={tint} />
+
+            {/* Subtle Gradient Overlay for "Sheen" */}
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.02)' }]} />
+
+            {/* Content Container */}
+            <View style={{ zIndex: 1 }}>
+                {children}
+            </View>
         </View>
     );
 };
@@ -23,8 +35,7 @@ export const GlassPane = ({ blurAmount = 15, opacity = 0.08, style, children, ..
 const styles = StyleSheet.create({
     container: {
         overflow: 'hidden',
-        backgroundColor: 'rgba(30,30,30,0.4)', // Fallback / Base tint
-        borderColor: 'rgba(255,255,255,0.1)',
         borderWidth: 1,
+        // No explicit background color needed if BlurView works, mostly handled by tint
     },
 });

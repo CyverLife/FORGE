@@ -143,8 +143,17 @@ export function useHabits() {
             }
 
             if (data) {
-                // Force a refetch to ensure consistent state and handle potential triggers
-                await fetchHabits();
+                // Manual State Update (Faster than re-fetching)
+                setHabits(current => {
+                    const newHabit = {
+                        ...data,
+                        completed_today: false,
+                        streak: 0,
+                        consistency: 0,
+                        logs: []
+                    };
+                    return [newHabit, ...current];
+                });
                 return data;
             }
         } catch (e) {
@@ -193,5 +202,28 @@ export function useHabits() {
         }
     };
 
-    return { habits, loading, addHabit, logHabit };
+    const deleteHabit = async (habitId: string) => {
+        if (!session?.user) return;
+
+        // Optimistic Update
+        const previousHabits = [...habits];
+        setHabits(current => current.filter(h => h.id !== habitId));
+
+        try {
+            const { error } = await supabase
+                .from('habits')
+                .delete()
+                .eq('id', habitId)
+                .eq('user_id', session.user.id);
+
+            if (error) throw error;
+        } catch (error) {
+            console.error('Error deleting habit:', error);
+            // Rollback
+            setHabits(previousHabits);
+            Alert.alert('Error', 'Failed to delete protocol. Changes reverted.');
+        }
+    };
+
+    return { habits, loading, addHabit, logHabit, deleteHabit };
 }

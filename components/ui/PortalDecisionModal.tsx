@@ -3,9 +3,10 @@ import { useGamification } from '@/hooks/useGamification';
 import { PortalDecisionType, usePortalDecision } from '@/hooks/usePortalDecision';
 import { useSoundSystem } from '@/hooks/useSoundSystem';
 import { getConsciousnessMessage } from '@/lib/consciousness-messages';
+import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useMemo } from 'react';
-import { Modal, Text, TouchableOpacity, Vibration, View } from 'react-native';
+import { Modal, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -61,9 +62,13 @@ export const PortalDecisionModal: React.FC<PortalDecisionModalProps> = ({
         }
     }, [visible]);
 
-    const handleDecision = async (decision: PortalDecisionType) => {
-        // Haptic feedback handled by sound system or vibration
-        Vibration.vibrate(50);
+    const handlePress = async (decision: PortalDecisionType) => {
+        // Differentiated haptic feedback based on decision
+        if (decision === 'BRIGHTEN') {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } else {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+        }
 
         // Animate the chosen option
         if (decision === 'BRIGHTEN') {
@@ -159,7 +164,7 @@ export const PortalDecisionModal: React.FC<PortalDecisionModalProps> = ({
                     <View className="gap-4">
                         {/* BRIGHTEN - Angel Decision */}
                         <TouchableOpacity
-                            onPress={() => handleDecision('BRIGHTEN')}
+                            onPress={() => handlePress('BRIGHTEN')}
                             disabled={isRecording}
                             className="active:scale-95"
                         >
@@ -170,7 +175,9 @@ export const PortalDecisionModal: React.FC<PortalDecisionModalProps> = ({
                                 className="p-6 rounded-premium flex-row items-center justify-between"
                             >
                                 <View className="flex-row items-center gap-3">
-                                    <Text style={{ fontSize: 32 }}>😇</Text>
+                                    <View className="w-10 h-10 bg-white/20 rounded-full items-center justify-center">
+                                        <IconSymbol name="star.fill" size={24} color="#FFFFFF" />
+                                    </View>
                                     <View>
                                         <Text className="text-white font-black text-xl font-display">
                                             BRILLAR
@@ -186,7 +193,7 @@ export const PortalDecisionModal: React.FC<PortalDecisionModalProps> = ({
 
                         {/* DARKEN - Simio Decision */}
                         <TouchableOpacity
-                            onPress={() => handleDecision('DARKEN')}
+                            onPress={() => handlePress('DARKEN')}
                             disabled={isRecording}
                             className="active:scale-95"
                         >
@@ -197,7 +204,9 @@ export const PortalDecisionModal: React.FC<PortalDecisionModalProps> = ({
                                 className="p-6 rounded-premium flex-row items-center justify-between"
                             >
                                 <View className="flex-row items-center gap-3">
-                                    <Text style={{ fontSize: 32 }}>🐒</Text>
+                                    <View className="w-10 h-10 bg-white/20 rounded-full items-center justify-center">
+                                        <IconSymbol name="flame.fill" size={24} color="#FFFFFF" />
+                                    </View>
                                     <View>
                                         <Text className="text-white font-black text-xl font-display">
                                             OSCURECER

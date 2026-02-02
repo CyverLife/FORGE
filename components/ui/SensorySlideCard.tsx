@@ -1,3 +1,4 @@
+import { GlassPane } from '@/components/ui/GlassPane';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -91,11 +92,13 @@ export const SensorySlideCard: React.FC<SensorySlideCardProps> = ({
                         </Animated.View>
 
                         {/* Narrative */}
-                        <Animated.View entering={FadeInDown.delay(200).springify()} className="bg-black/40 p-6 rounded-premium border-l-4 border-forge-orange mb-6 backdrop-blur-md">
-                            <Text className="text-white text-lg font-serif italic leading-relaxed">
-                                "{data.narrative}"
-                            </Text>
-                        </Animated.View>
+                        <GlassPane intensity={50} tint="dark" borderOpacity={0.2} className="mb-6 rounded-premium border-l-4 border-l-forge-orange">
+                            <Animated.View entering={FadeInDown.delay(200).springify()} className="p-6">
+                                <Text className="text-white text-lg font-serif italic leading-relaxed">
+                                    "{data.narrative}"
+                                </Text>
+                            </Animated.View>
+                        </GlassPane>
 
                         {/* Sensory Details Expander */}
                         <TouchableOpacity
@@ -161,8 +164,8 @@ export const SensorySlideCard: React.FC<SensorySlideCardProps> = ({
                                 onPress={() => onPortalAction('brighten')}
                                 className="bg-blue-600 p-4 rounded-xl border border-blue-400 active:bg-blue-700 flex-row items-center"
                             >
-                                <View className="bg-white/20 p-2 rounded-full mr-4">
-                                    <Text style={{ fontSize: 20 }}>😇</Text>
+                                <View className="flex-row items-center gap-2">
+                                    <IconSymbol name="star.fill" size={18} color="#FFFFFF" />
                                 </View>
                                 <View className="flex-1">
                                     <Text className="text-white font-black text-lg uppercase tracking-wide">
@@ -179,8 +182,8 @@ export const SensorySlideCard: React.FC<SensorySlideCardProps> = ({
                                 onPress={() => onPortalAction('darken')}
                                 className="bg-red-600/80 p-4 rounded-xl border border-red-500/50 active:bg-red-700/80 flex-row items-center"
                             >
-                                <View className="bg-white/10 p-2 rounded-full mr-4">
-                                    <Text style={{ fontSize: 20 }}>🐒</Text>
+                                <View className="flex-row items-center gap-2">
+                                    <IconSymbol name="flame.fill" size={18} color="#FFFFFF" />
                                 </View>
                                 <View className="flex-1">
                                     <Text className="text-white font-black text-lg uppercase tracking-wide">

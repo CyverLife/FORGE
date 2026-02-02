@@ -16,7 +16,7 @@ import { SensorySlideCard } from './SensorySlideCard';
 const FlashList = ShopifyFlashList as any;
 
 export const HabitList = () => {
-    const { habits, loading, logHabit } = useHabits();
+    const { habits, loading, logHabit, deleteHabit } = useHabits();
     const { playSound, playHaptic } = useSoundSystem();
     const [filter, setFilter] = useState<'ALL' | 'IRON' | 'FIRE' | 'STEEL' | 'FOCUS'>('ALL');
 
@@ -71,6 +71,24 @@ export const HabitList = () => {
         // If no slide, maybe later implement details modal or just do nothing (currently swipe to complete)
     };
 
+    const handleDeleteHabit = (habit: Habit) => {
+        Alert.alert(
+            'Eliminar Protocolo',
+            `¿Estás seguro de que deseas eliminar "${habit.title}"? Esta acción no se puede deshacer.`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Eliminar',
+                    style: 'destructive',
+                    onPress: async () => {
+                        await deleteHabit(habit.id);
+                        playHaptic('heavy');
+                    }
+                }
+            ]
+        );
+    };
+
     const handleSensoryAction = (action: 'brighten' | 'darken') => {
         if (!selectedSensorySlide) return;
 
@@ -81,44 +99,20 @@ export const HabitList = () => {
 
         // Map action to portal decision
         if (action === 'brighten') {
-            // For brighten, we assume completion and trigger portal logic (which updates scores)
-            // We can skip the question "Does this brighten?" because they just answered it in the slide
-            // But we need to update the scores.
-            // Actually, the user wants "Tap -> Slide -> Action -> Complete".
-            // We can reuse handlePortalDecision logic if we synthesize the call.
-            // Or simpler: trigger the swipe-like completion but pass a flag to AUTO-SELECT the decision if we want to skip the second modal.
-
-            // For now, let's open the Portal Decision Modal as confirmation? 
-            // Or better: Direct completion with specific decision.
-            // But handlePortalDecision takes a decision type and updates locally? No, it calls hook.
-            // Wait, handlePortalDecision in HabitList calls logHabit. 
-            // The ACTUAL decision recording happens in the Modal's hook? 
-            // No, looking at HabitList again... handlePortalDecision calls logHabit.
-            // The PortalDecisionModal handles the `usePortalDecision` hook internally to record the decision?
-            // Yes, let's check PortalDecisionModal usage. 
-            // <PortalDecisionModal onDecision={handlePortalDecision} ... />
-            // handlePortalDecision receives `decision` but currently ignores it in the catch/try block in HabitList?
-            // Let's re-read handlePortalDecision in HabitList:
-            /*
-               const handlePortalDecision = async (decision: PortalDecisionType) => {
-                   if (!pendingHabit) return;
-                   try {
-                       await logHabit(pendingHabit.id, pendingHabit.status);
-                   } ...
-               };
-            */
-            // It seems HabitList just logs the habit. The recording of the 'decision' (Angel/Simio score) must happen inside the Modal or via the callback?
-            // If PortalDecisionModal takes `onDecision`, it probably calls it AFTER recording the decision internally?
-            // I need to verify PortalDecisionModal.
-
-            // As a safe bet: Let's trigger the completion flow normally.
+            // DIRECT COMPLETION - Fix duplicate screen issue
             if (habitData) {
-                handleSwipe(habitId, habitData.title, 'completed');
+                logHabit(habitId, 'completed');
+                // Optional: trigger "Angel" sound or effect here if not handled by logHabit
+                // We skip the PortalModal because decision was made in Sensory Slide
+                if (habitData.attribute === 'IRON' || habitData.attribute === 'FIRE') {
+                    // Just an example logic, really we assume "Brighten" = Angel decision in this context? 
+                    // Or simply completing is enough. The user disliked the second question.
+                }
             }
         } else {
             // Darken -> Facillaty / Skip
             if (habitData) {
-                handleSwipe(habitId, habitData.title, 'failed');
+                logHabit(habitId, 'failed');
             }
         }
     };
@@ -134,6 +128,7 @@ export const HabitList = () => {
                 enableTrackpadTwoFingerGesture
                 rightThreshold={40}
                 leftThreshold={40}
+                enabled={!item.completed_today} // ANTI-CHEAT: Disable swipe if completed
                 renderLeftActions={(_prog, drag) => {
                     const styleAnimation = useAnimatedStyle(() => ({
                         transform: [{ translateX: drag.value - 80 }],
@@ -165,7 +160,12 @@ export const HabitList = () => {
                     }
                 }}
             >
-                <TouchableOpacity onPress={() => handleHabitPress(item)} activeOpacity={0.9}>
+                <TouchableOpacity
+                    onPress={() => !item.completed_today && handleHabitPress(item)}
+                    onLongPress={() => handleDeleteHabit(item)}
+                    activeOpacity={item.completed_today ? 1 : 0.9}
+                    delayLongPress={500}
+                >
                     <QuestCard
                         habit={item}
                         onComplete={() => handleSwipe(item.id, item.title, 'completed')}

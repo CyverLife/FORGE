@@ -5,12 +5,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Premium Deep Blacks (Heroes Academy Style)
-        'deep-black': '#0E0E0E',
-        'card-black': '#1A1A1A',
-        'border-subtle': '#2A2A2A',
+        // Zinc Scale (Pro 2026 Standard)
+        'deep-black': '#09090b',      // Zinc 950 (was #0E0E0E)
+        'card-black': '#18181b',      // Zinc 900 (was #1A1A1A)
+        'border-subtle': '#27272a',   // Zinc 800 (was #2A2A2A)
 
-        // Forge Brand Colors
+        // FORGE Brand Colors (PRESERVED)
         'forge-red': '#C21F1F',
         'forge-orange': '#F97316',
         'forge-ember': '#EF4444',
@@ -20,11 +20,15 @@ module.exports = {
         // Premium Grays
         'text-primary': '#FFFFFF',
         'text-secondary': '#A1A1A1',
-        'text-tertiary': '#6B7280',
+        'text-tertiary': '#71717a',   // Zinc 500 (was #6B7280)
       },
       fontFamily: {
-        // Display font for titles
-        'display': ['Inter', 'system-ui', 'sans-serif'],
+        // Display font for titles and numbers (Bold)
+        'display': ['Inter_700Bold', 'Inter', 'system-ui', 'sans-serif'],
+        // Body font for regular text
+        'body': ['Inter_400Regular', 'Inter', 'system-ui', 'sans-serif'],
+        // Label font for small text (Light)
+        'label': ['Inter_300Light', 'Inter', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         'card': '16px',

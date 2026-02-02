@@ -1,3 +1,4 @@
+import { GlassPane } from '@/components/ui/GlassPane';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { supabase } from '@/lib/supabase';
 import { Image } from 'expo-image';
@@ -79,14 +80,14 @@ export default function AuthScreen() {
                     </Text>
                 </Animated.View>
 
-                {/* Form */}
-                <View className="gap-y-5">
+                {/* Form - Glassmorphism */}
+                <GlassPane intensity={30} tint="dark" borderOpacity={0.15} className="gap-y-5 p-6 rounded-3xl mb-8">
                     <Animated.View entering={FadeInDown.delay(150).springify()}>
                         <Text className="text-text-secondary mb-2 ml-1 text-xs uppercase tracking-wider font-bold">
                             Email
                         </Text>
                         <TextInput
-                            className="bg-card-black text-text-primary p-4 rounded-card border border-border-subtle"
+                            className="bg-black/30 text-text-primary p-4 rounded-xl border border-white/10"
                             placeholder="tu@email.com"
                             placeholderTextColor="#6B7280"
                             onChangeText={setEmail}
@@ -101,7 +102,7 @@ export default function AuthScreen() {
                             Contraseña
                         </Text>
                         <TextInput
-                            className="bg-card-black text-text-primary p-4 rounded-card border border-border-subtle"
+                            className="bg-black/30 text-text-primary p-4 rounded-xl border border-white/10"
                             placeholder="••••••••"
                             placeholderTextColor="#6B7280"
                             secureTextEntry={true}
@@ -110,7 +111,7 @@ export default function AuthScreen() {
                             autoCapitalize="none"
                         />
                     </Animated.View>
-                </View>
+                </GlassPane>
 
                 {/* CTAs - Premium Copy */}
                 <Animated.View

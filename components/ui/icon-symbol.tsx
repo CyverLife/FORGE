@@ -40,6 +40,24 @@ const MAPPING = {
   'checkmark': 'check',
   'xmark.circle.fill': 'cancel',
   'brain.head.profile': 'psychology',
+  'list.bullet': 'format-list-bulleted',
+  'chart.bar.fill': 'bar-chart',
+  'moon.stars.fill': 'nightlight-round',
+  'safari': 'explore',
+  'arrow.up.right': 'arrow-outward',
+  'arrow.down.right': 'call-received', // Approximation for down-right
+  'chevron.down': 'keyboard-arrow-down',
+  'chevron.up': 'keyboard-arrow-up',
+  'xmark': 'close',
+  'music.note': 'music-note',
+  'nose.fill': 'face', // Approximation or use specialized icon set if needed
+  'hand.point.up.fill': 'touch-app',
+  'speaker.wave.2.fill': 'volume-up',
+  'camera.fill': 'photo-camera',
+  'bell.fill': 'notifications',
+  'hand.tap.fill': 'touch-app',
+  'arrow.right.square': 'exit-to-app',
+  'arrow.up.circle.fill': 'arrow-circle-up',
 } as IconMapping;
 
 /**
