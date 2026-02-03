@@ -1,37 +1,42 @@
 import { GradientBackground } from '@/components/ui/GradientBackground';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { SkiaGlassPane } from '@/components/ui/SkiaGlassPane';
-import { UserAvatar } from '@/components/ui/UserAvatar';
-import { FRAMES } from '@/constants/frames';
+import { SkiaHexagonAvatar } from '@/components/ui/SkiaHexagonAvatar';
 import { useAuth } from '@/hooks/useAuth';
-import { useGamification } from '@/hooks/useGamification';
-import React from 'react';
-import { ScrollView, Text, View } from 'react-native';
-import Animated, { FadeInDown, FadeInRight } from 'react-native-reanimated';
+import { RankingEntry, useGamification } from '@/hooks/useGamification';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from 'react-native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function LeaderboardScreen() {
     const { user } = useAuth();
-    const { level, xp, consciousnessRank, streak } = useGamification();
+    const { getLeaderboard, consciousnessRank } = useGamification();
     const insets = useSafeAreaInsets();
+    const [leaderboard, setLeaderboard] = useState<RankingEntry[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
-    // ... existing code ...
-
-    // Get current frame
-    const currentFrameId = user?.user_metadata?.frame_id || 'default';
-    const currentFrame = FRAMES.find(f => f.id === currentFrameId);
-
-    // Determine colors based on rank
-    const getRankColors = (rank: string) => {
-        switch (rank) {
-            case 'ORO': return { text: 'text-yellow-400', border: 'border-yellow-500/50', bg: 'bg-yellow-500/20', shadow: 'shadow-yellow-500/50', glow: 'rgba(234, 179, 8, 0.5)' };
-            case 'PLATA': return { text: 'text-gray-300', border: 'border-gray-400/50', bg: 'bg-gray-400/20', shadow: 'shadow-gray-400/50', glow: 'rgba(156, 163, 175, 0.5)' };
-            case 'INFINITO': return { text: 'text-purple-400', border: 'border-purple-500/50', bg: 'bg-purple-500/20', shadow: 'shadow-purple-500/50', glow: 'rgba(168, 85, 247, 0.5)' };
-            default: return { text: 'text-orange-500', border: 'border-orange-500/50', bg: 'bg-orange-500/20', shadow: 'shadow-orange-500/50', glow: 'rgba(249, 115, 22, 0.5)' }; // BRONCE
-        }
+    const fetchLeaderboard = async () => {
+        const data = await getLeaderboard();
+        setLeaderboard(data);
+        setLoading(false);
+        setRefreshing(false);
     };
 
-    const colors = getRankColors(consciousnessRank);
+    useEffect(() => {
+        fetchLeaderboard();
+    }, []);
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        fetchLeaderboard();
+    };
+
+    const topThree = leaderboard.slice(0, 3);
+    const restOfUsers = leaderboard.slice(3);
+
+    const currentUserRank = leaderboard.find(u => u.id === user?.id);
 
     return (
         <View style={{ flex: 1, backgroundColor: '#09090B', paddingTop: insets.top }}>
@@ -39,149 +44,149 @@ export default function LeaderboardScreen() {
                 {/* Header */}
                 <Animated.View
                     entering={FadeInDown.duration(600).springify()}
-                    className="pt-12 pb-6 px-4 border-b border-white/5 bg-black/20"
+                    className="pt-6 pb-6 px-4 border-b border-white/5 bg-black/20"
                 >
                     <View className="flex-row items-center justify-between">
                         <View className="flex-row items-center gap-3">
-                            <View className={`w-10 h-10 rounded-full items-center justify-center border ${colors.border} ${colors.bg}`}>
-                                <IconSymbol name="trophy.fill" size={20} color={colors.glow.replace(/[\d.]+\)$/, '1)')} />
-                            </View>
+                            <IconSymbol name="trophy.fill" size={24} color="#F97316" />
                             <View>
-                                <Text className="text-white font-black text-xl uppercase tracking-wider font-display">RANKING</Text>
-                                <Text className={`text-xs font-bold ${colors.text} tracking-widest`}>TEMPORADA 1</Text>
+                                <Text className="text-white font-black text-2xl uppercase tracking-wider font-display">RANKING</Text>
+                                <Text className="text-forge-orange text-[10px] font-bold tracking-[0.2em] uppercase">TEMPORADA 1</Text>
                             </View>
                         </View>
-                        <View className="bg-white/5 py-1 px-3 rounded-full border border-white/10 mt-2">
+                        <View className="bg-white/5 py-1 px-3 rounded-full border border-white/10">
                             <Text className="text-white/70 text-[10px] font-bold">GLOBAL</Text>
                         </View>
                     </View>
                 </Animated.View>
 
-                <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
-
-                    {/* Your Ranked Card */}
-                    <Animated.View
-                        entering={FadeInRight.delay(200).springify()}
-                        className="mx-4 mt-8 mb-8"
-                    >
-                        <View className="relative">
-                            {/* Glow Effect */}
-                            <View
-                                style={{
-                                    position: 'absolute',
-                                    top: 20,
-                                    left: 20,
-                                    right: 20,
-                                    bottom: 20,
-                                    backgroundColor: colors.glow,
-                                    opacity: 0.3,
-                                    borderRadius: 30,
-                                    shadowColor: colors.glow,
-                                    shadowOffset: { width: 0, height: 0 },
-                                    shadowOpacity: 0.8,
-                                    shadowRadius: 20,
-                                }}
-                            />
-
-                            <SkiaGlassPane
-                                height={260}
-                                cornerRadius={30}
-                                backgroundColor="rgba(20, 20, 25, 0.85)"
-                                borderColor={colors.glow}
-                                borderWidth={1}
-                            >
-                                <View className="p-6 items-center w-full h-full justify-between">
-
-                                    {/* Top Badge */}
-                                    <View className={`px-4 py-1.5 rounded-full border ${colors.border} ${colors.bg} mb-4`}>
-                                        <Text className={`${colors.text} font-black text-xs tracking-[0.2em] uppercase`}>
-                                            RANGO {consciousnessRank}
-                                        </Text>
-                                    </View>
-
-                                    {/* Avatar & Frame */}
-                                    <View className="items-center justify-center relative mb-4">
-                                        <UserAvatar
-                                            url={user?.user_metadata?.avatar_url}
-                                            frame={currentFrame}
-                                            size={140}
-                                        />
-
-                                        {/* Rank Badge Indicator */}
-                                        <View className={`absolute -bottom-3 bg-[#0E0E0E] px-3 py-1 rounded-lg border ${colors.border} z-20`}>
-                                            <Text className="text-white font-bold text-xs">Nvl. {level}</Text>
-                                        </View>
-                                    </View>
-
-                                    {/* Name & Stats */}
-                                    <View className="items-center w-full">
-                                        <Text className="text-white font-black text-2xl font-display tracking-wide mb-1">
-                                            {user?.user_metadata?.name || 'Iniciado'}
-                                        </Text>
-
-                                        <View className="flex-row items-center gap-6 mt-2">
-                                            <View className="items-center">
-                                                <Text className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">EXPERIENCIA</Text>
-                                                <Text className="text-white font-bold text-lg">{Math.floor(xp)} <Text className="text-gray-500 text-xs">XP</Text></Text>
-                                            </View>
-                                            <View className="w-[1px] h-8 bg-white/10" />
-                                            <View className="items-center">
-                                                <Text className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">RACHA</Text>
-                                                <Text className={`${colors.text} font-bold text-lg`}>{streak} <Text className="text-gray-500 text-xs">DÍAS</Text></Text>
-                                            </View>
-                                        </View>
-                                    </View>
-
-                                </View>
-                            </SkiaGlassPane>
-                        </View>
-                    </Animated.View>
-
-                    {/* Coming Soon Section */}
-                    {/* Global Leaderboard - TOP AGENTS */}
-                    <View className="px-6 mb-12">
-                        <View className="flex-row items-center justify-between mb-4">
-                            <Text className="text-white/40 text-[10px] font-bold uppercase tracking-widest">TOP AGENTES GLOBALES</Text>
-                            <TouchableOpacity>
-                                <Text className="text-forge-orange text-[10px] font-bold uppercase">VER TODOS</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        {[
-                            { rank: 1, name: 'CYBERMONK', score: 9850, streak: 142, color: 'text-yellow-400', border: 'border-yellow-500/50' },
-                            { rank: 2, name: 'NEON_NINJA', score: 8720, streak: 89, color: 'text-gray-300', border: 'border-gray-400/50' },
-                            { rank: 3, name: 'VOID_WALKER', score: 8450, streak: 76, color: 'text-orange-400', border: 'border-orange-500/50' },
-                            { rank: 4, name: 'ZEN_MASTER', score: 7200, streak: 45, color: 'text-white/60', border: 'border-white/10' },
-                            { rank: 5, name: 'QUANTUM_LZ', score: 6980, streak: 32, color: 'text-white/60', border: 'border-white/10' },
-                        ].map((agent, i) => (
-                            <View
-                                key={i}
-                                className={`flex-row items-center bg-white/5 p-4 rounded-xl border mb-3 ${agent.border} ${i < 3 ? 'bg-gradient-to-r from-white/10 to-transparent' : 'border-white/5'}`}
-                            >
-                                <View className="w-8 items-center justify-center mr-4">
-                                    <Text className={`font-black text-lg ${agent.color} font-display italic`}>#{agent.rank}</Text>
-                                </View>
-
-                                {/* Generic Avatar Placeholder since we don't have URLs for them */}
-                                <View className={`w-10 h-10 rounded-lg items-center justify-center border ${agent.border} bg-white/5 mr-4`}>
-                                    <Text className="text-white font-bold text-xs">{agent.name.substring(0, 2)}</Text>
-                                </View>
-
-                                <View className="flex-1">
-                                    <Text className={`font-bold text-sm ${i < 3 ? 'text-white' : 'text-gray-400'} tracking-wide`}>{agent.name}</Text>
-                                    <Text className="text-xs text-gray-600 font-medium">Nivel {Math.floor(agent.score / 1000) + 10} • {agent.streak} días racha</Text>
-                                </View>
-
-                                <View>
-                                    <Text className="text-white font-bold text-sm">{agent.score.toLocaleString()}</Text>
-                                    <Text className="text-[8px] text-right text-forge-orange font-bold uppercase">XP</Text>
-                                </View>
-                            </View>
-                        ))}
+                {loading ? (
+                    <View className="flex-1 items-center justify-center">
+                        <ActivityIndicator size="large" color="#F97316" />
                     </View>
+                ) : (
+                    <ScrollView
+                        className="flex-1"
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={{ paddingBottom: 100 }}
+                        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#F97316" />}
+                    >
+                        {/* Top 3 Podium */}
+                        <View className="flex-row items-end justify-center mt-8 mb-12 h-64">
+                            {/* 2nd Place */}
+                            {topThree[1] && (
+                                <Animated.View entering={FadeInUp.delay(100).springify()} className="items-center -mr-4 z-10">
+                                    <View className="mb-2">
+                                        <SkiaHexagonAvatar size={80} url={topThree[1].avatar_url} borderColor="#9CA3AF" borderWidth={2} />
+                                        <View className="absolute -bottom-3 self-center bg-gray-600 px-2 py-0.5 rounded-full border border-white/20">
+                                            <Text className="text-white font-bold text-[10px]">#2</Text>
+                                        </View>
+                                    </View>
+                                    <Text className="text-gray-300 font-bold text-xs mt-3 mb-1 w-20 text-center" numberOfLines={1}>{topThree[1].name}</Text>
+                                    <Text className="text-gray-500 text-[10px] font-mono">{topThree[1].xp} XP</Text>
+                                    <View className="h-24 w-20 bg-gray-800/30 rounded-t-lg border-t border-gray-600/30 mt-2" />
+                                </Animated.View>
+                            )}
 
+                            {/* 1st Place */}
+                            {topThree[0] && (
+                                <Animated.View entering={FadeInUp.delay(0).springify()} className="items-center z-20 mx-2 -mb-2">
+                                    <View className="mb-3 relative">
+                                        <IconSymbol name="crown.fill" size={24} color="#FACC15" style={{ position: 'absolute', top: -24, left: 32, zIndex: 10 }} />
+                                        <SkiaHexagonAvatar size={110} url={topThree[0].avatar_url} borderColor="#FACC15" borderWidth={3} />
+                                        <View className="absolute -bottom-3 self-center bg-yellow-500 px-3 py-1 rounded-full border border-white/20 shadow-lg shadow-yellow-500/50">
+                                            <Text className="text-black font-black text-xs">#1</Text>
+                                        </View>
+                                    </View>
+                                    <Text className="text-yellow-400 font-bold text-sm mt-4 mb-1 w-28 text-center" numberOfLines={1}>{topThree[0].name}</Text>
+                                    <Text className="text-yellow-600/80 text-[10px] font-mono font-bold">{topThree[0].xp} XP</Text>
+                                    <View className="h-32 w-24 bg-yellow-500/10 rounded-t-xl border-t border-yellow-500/30 mt-2 relative overflow-hidden">
+                                        <View className="absolute inset-0 bg-gradient-to-b from-yellow-500/20 to-transparent" />
+                                    </View>
+                                </Animated.View>
+                            )}
 
-                </ScrollView>
+                            {/* 3rd Place */}
+                            {topThree[2] && (
+                                <Animated.View entering={FadeInUp.delay(200).springify()} className="items-center -ml-4 z-10">
+                                    <View className="mb-2">
+                                        <SkiaHexagonAvatar size={80} url={topThree[2].avatar_url} borderColor="#B45309" borderWidth={2} />
+                                        <View className="absolute -bottom-3 self-center bg-amber-700 px-2 py-0.5 rounded-full border border-white/20">
+                                            <Text className="text-white font-bold text-[10px]">#3</Text>
+                                        </View>
+                                    </View>
+                                    <Text className="text-amber-500 font-bold text-xs mt-3 mb-1 w-20 text-center" numberOfLines={1}>{topThree[2].name}</Text>
+                                    <Text className="text-amber-700 text-[10px] font-mono">{topThree[2].xp} XP</Text>
+                                    <View className="h-20 w-20 bg-amber-900/20 rounded-t-lg border-t border-amber-700/30 mt-2" />
+                                </Animated.View>
+                            )}
+                        </View>
+
+                        {/* List */}
+                        {leaderboard.length === 0 ? (
+                            <View className="flex-1 items-center justify-center py-20">
+                                <IconSymbol name="person.3.fill" size={48} color="#333" />
+                                <Text className="text-white/30 text-center mt-4 font-bold">No hay agentes visualizados</Text>
+                                <Text className="text-white/20 text-center text-xs mt-2">Sé el primero en forjar tu destino</Text>
+                            </View>
+                        ) : (
+                            <View className="px-4">
+                                {restOfUsers.map((item, index) => (
+                                    <Animated.View
+                                        key={item.id}
+                                        entering={FadeInDown.delay(index * 50 + 300)}
+                                        className="mb-3"
+                                    >
+                                        <SkiaGlassPane
+                                            height={72}
+                                            cornerRadius={16}
+                                            backgroundColor={item.id === user?.id ? "rgba(249, 115, 22, 0.15)" : "rgba(255, 255, 255, 0.03)"}
+                                            borderColor={item.id === user?.id ? "rgba(249, 115, 22, 0.4)" : "rgba(255, 255, 255, 0.08)"}
+                                            borderWidth={item.id === user?.id ? 1 : 0.5}
+                                        >
+                                            <View className="flex-row items-center h-full px-4 gap-4">
+                                                <Text className="text-white/50 font-bold font-mono w-6 text-center">{item.rank}</Text>
+
+                                                <SkiaHexagonAvatar size={48} url={item.avatar_url} borderColor={item.id === user?.id ? "#F97316" : "#333"} borderWidth={1} />
+
+                                                <View className="flex-1">
+                                                    <Text className={`font-bold text-sm ${item.id === user?.id ? 'text-white' : 'text-gray-300'}`}>{item.name}</Text>
+                                                    <Text className="text-[10px] text-gray-500 uppercase tracking-wider">{item.consciousness_rank}</Text>
+                                                </View>
+
+                                                <View className="items-end">
+                                                    <Text className="text-white font-bold font-mono">{item.xp.toLocaleString()}</Text>
+                                                    <Text className="text-[8px] text-gray-500">XP</Text>
+                                                </View>
+                                            </View>
+                                        </SkiaGlassPane>
+                                    </Animated.View>
+                                ))}
+                            </View>
+                        )}
+                        {currentUserRank && currentUserRank.rank > 3 && (
+                            <View className="mt-8 mx-4 mb-8">
+                                <Text className="text-white/30 text-center text-[10px] uppercase tracking-widest mb-3">Tu Posición</Text>
+                                <SkiaGlassPane height={80} cornerRadius={20} backgroundColor="rgba(249, 115, 22, 0.2)" borderColor="#F97316" borderWidth={1}>
+                                    <View className="flex-row items-center h-full px-5 gap-4">
+                                        <View className="w-8 h-8 rounded-full bg-forge-orange items-center justify-center">
+                                            <Text className="text-black font-black">{currentUserRank.rank}</Text>
+                                        </View>
+                                        <SkiaHexagonAvatar size={50} url={currentUserRank.avatar_url} borderColor="#F97316" borderWidth={2} />
+                                        <View className="flex-1">
+                                            <Text className="text-white font-bold text-lg">TÚ</Text>
+                                            <Text className="text-forge-orange text-xs uppercase tracking-wider font-bold">Nivel {currentUserRank.level}</Text>
+                                        </View>
+                                        <View className="items-end">
+                                            <Text className="text-white font-black text-xl font-display">{currentUserRank.xp.toLocaleString()}</Text>
+                                            <Text className="text-white/50 text-[10px]">XP TOTAL</Text>
+                                        </View>
+                                    </View>
+                                </SkiaGlassPane>
+                            </View>
+                        )}
+                    </ScrollView>
+                )}
             </GradientBackground>
         </View>
     );

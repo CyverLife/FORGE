@@ -16,14 +16,50 @@ export interface VisionEntry {
     rotation: number;
     createdAt: number;
     textStyle?: {
-        color1: string;          // First word color
-        color2: string;          // Rest of text color
-        fontSize1: number;       // First word size
-        fontSize2: number;       // Rest of text size
-        fontFamily: 'display' | 'body' | 'label';
+        lines: {
+            color: string;
+            fontSize: number;
+            fontFamily: string;
+        }[];
         position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left' | 'center';
+        // Legacy support (optional)
+        color1?: string;
+        color2?: string;
+        fontSize1?: number;
+        fontSize2?: number;
+        fontFamily?: string;
     };
 }
+
+const migrateVision = (v: VisionEntry): VisionEntry => {
+    if (v.textStyle && !v.textStyle.lines) {
+        // Migrate legacy format
+        return {
+            ...v,
+            textStyle: {
+                position: v.textStyle.position || 'bottom-right',
+                lines: [
+                    {
+                        color: v.textStyle.color1 || '#3B82F6',
+                        fontSize: v.textStyle.fontSize1 || 36,
+                        fontFamily: v.textStyle.fontFamily || 'display'
+                    },
+                    {
+                        color: v.textStyle.color2 || '#FFFFFF',
+                        fontSize: v.textStyle.fontSize2 || 28,
+                        fontFamily: v.textStyle.fontFamily || 'body'
+                    },
+                    {
+                        color: v.textStyle.color2 || '#FFFFFF',
+                        fontSize: v.textStyle.fontSize2 || 28,
+                        fontFamily: v.textStyle.fontFamily || 'body'
+                    }
+                ]
+            }
+        };
+    }
+    return v;
+};
 
 export const useVisionBoard = () => {
     const { showAlert } = useGlobalAlert();
@@ -43,10 +79,9 @@ export const useVisionBoard = () => {
                 const storedData = await AsyncStorage.getItem(VISION_STORAGE_KEY);
                 if (storedData) {
                     const { visions: savedVisions, currentId: savedCurrentId } = JSON.parse(storedData);
-                    console.log('🖼️ Vision Board - Loaded visions:', savedVisions.length);
-                    console.log('🖼️ Vision Board - Current ID:', savedCurrentId);
-                    console.log('🖼️ Vision Board - Sample URI:', savedVisions[0]?.uri);
-                    setVisions(savedVisions);
+                    const migratedVisions = savedVisions.map(migrateVision);
+                    console.log('🖼️ Vision Board - Loaded & Migrated visions:', migratedVisions.length);
+                    setVisions(migratedVisions);
                     setCurrentId(savedCurrentId);
                 }
             } catch (error) {
@@ -57,6 +92,24 @@ export const useVisionBoard = () => {
         };
         init();
     }, []);
+
+    // ... saveState remains same ...
+
+    // ... addVision update ...
+    // around line 118 in original file (now needs generic replacement)
+    // I need to target the `addVision` function logic specifically for the new structure.
+    // I'll leave `addVision` alone in this block if I can't easily target it without replacing the whole file.
+    // Wait, I can target the `newEntry` creation block. 
+
+    // Let's replace the whole top part of the file including interface and useEffect.
+    // And for `addVision`, I'll use a separate replacement or include it if range allows. 
+    // The range 12-59 covers interface + useEffect.
+    // I'll split into two ReplaceFileContent calls if needed, or just one large one if context allows.
+    // Check `view_file` again. 
+    // `addVision` is further down.
+
+    // I will replace `interface VisionEntry` down to `useEffect` first.
+
 
     // Save state to AsyncStorage
     const saveState = async (newVisions: VisionEntry[], newCurrentId: string | null) => {
@@ -122,11 +175,11 @@ export const useVisionBoard = () => {
                 rotation: Math.random() * 6 - 3, // -3 to +3
                 createdAt: Date.now(),
                 textStyle: {
-                    color1: '#3B82F6',     // blue-500
-                    color2: '#FFFFFF',     // white
-                    fontSize1: 36,
-                    fontSize2: 28,
-                    fontFamily: 'display',
+                    lines: [
+                        { color: '#3B82F6', fontSize: 36, fontFamily: 'display' },
+                        { color: '#FFFFFF', fontSize: 28, fontFamily: 'body' },
+                        { color: '#FFFFFF', fontSize: 28, fontFamily: 'body' }
+                    ],
                     position: 'bottom-right'
                 }
             };

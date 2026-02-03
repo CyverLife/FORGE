@@ -90,6 +90,11 @@ export default function SettingsScreen() {
             data: { name: newName }
         });
 
+        // Also sync to public profile for leaderboard
+        if (user) {
+            await supabase.from('profiles').update({ name: newName }).eq('id', user.id);
+        }
+
         if (error) {
             showToast('Error', 'No se pudo actualizar el nombre', 'error');
         } else {

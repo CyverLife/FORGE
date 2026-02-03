@@ -3,7 +3,7 @@ export interface Badge {
     label: string;
     image: any;
     unlockCondition: {
-        type: 'level' | 'streak' | 'rank';
+        type: 'level' | 'streak' | 'rank' | 'special';
         value: number | string;
     };
     description: string;
@@ -11,6 +11,23 @@ export interface Badge {
 }
 
 export const BADGES: Badge[] = [
+    // Special Badges
+    {
+        id: 'badge_founder',
+        label: 'Founder',
+        image: require('@/assets/images/badge_founder.png'), // Placeholder
+        unlockCondition: { type: 'special', value: 'founder' },
+        description: 'Miembro fundador de FORGE.',
+        type: 'SPECIAL'
+    },
+    {
+        id: 'badge_beta',
+        label: 'Beta Tester',
+        image: require('@/assets/images/badge_beta.png'), // Placeholder
+        unlockCondition: { type: 'special', value: 'beta_tester' },
+        description: 'Pionero en la fase de prueba.',
+        type: 'SPECIAL'
+    },
     // Streak Badges
     {
         id: 'streak_7',

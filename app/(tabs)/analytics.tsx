@@ -1,6 +1,5 @@
 import { GradientBackground } from '@/components/ui/GradientBackground';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { PortalView } from '@/components/ui/PortalView';
 import { SkiaGlassPane } from '@/components/ui/SkiaGlassPane';
 import { useGamification } from '@/hooks/useGamification';
 import { useHabits } from '@/hooks/useHabits';
@@ -11,13 +10,77 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
+// Helper to get day name
+const getDayName = (date: Date) => {
+    const days = ['D', 'L', 'M', 'X', 'J', 'V', 'S'];
+    return days[date.getDay()];
+};
+
 export default function AnalyticsScreen() {
     const { habits } = useHabits();
-    const { antiGravityScore, consciousnessRank, angelScore, simioScore } = useGamification();
+    const { antiGravityScore, consciousnessRank } = useGamification();
 
-    // Data Calculation: Attribute Distribution
+    // 1. Weekly Activity Data
+    const weeklyData = useMemo(() => {
+        const data = [];
+        const today = new Date();
+
+        // Loop last 7 days (reverse)
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - i);
+            date.setHours(0, 0, 0, 0);
+
+            // Count completed logs for this day across ALL habits
+            let count = 0;
+            habits.forEach(h => {
+                if (h.logs) {
+                    const hasLog = h.logs.some((l: any) => {
+                        const logDate = new Date(l.completed_at);
+                        logDate.setHours(0, 0, 0, 0);
+                        return logDate.getTime() === date.getTime() && l.status === 'completed';
+                    });
+                    if (hasLog) count++;
+                }
+            });
+
+            data.push({
+                day: getDayName(date),
+                count,
+                date,
+                full: count >= habits.length && habits.length > 0 // Perfect day?
+            });
+        }
+        return data;
+    }, [habits]);
+
+    // 2. Habit Insights (Master & Weak Link)
+    const insights = useMemo(() => {
+        if (!habits.length) return { best: null, worst: null };
+
+        // Best: Highest Streak
+        const sortedByStreak = [...habits].sort((a, b) => (b.streak || 0) - (a.streak || 0));
+        const best = sortedByStreak[0]?.streak > 0 ? sortedByStreak[0] : null;
+
+        // Worst: Most 'failed' status logs relative to total attempts, OR zero streak with oldest creation
+        // Simple approach: Lowest consistency (if available) or just 0 streak ?
+        // Let's go with: Habit with most explicit 'failed' logs
+        const sortedByFailures = [...habits].sort((a, b) => {
+            const failsA = a.logs?.filter((l: any) => l.status === 'failed').length || 0;
+            const failsB = b.logs?.filter((l: any) => l.status === 'failed').length || 0;
+            return failsB - failsA;
+        });
+
+        const worst = sortedByFailures[0]?.logs?.some((l: any) => l.status === 'failed') ? sortedByFailures[0] : null;
+
+        return { best, worst };
+    }, [habits]);
+
+    // Max value for chart scaling
+    const maxDaily = Math.max(...weeklyData.map(d => d.count), 1);
+
+    // Attribute Stats
     const attributeStats = useMemo(() => {
-        const total = habits.length || 1;
         return {
             FIRE: habits.filter(h => h.attribute === 'FIRE').length,
             IRON: habits.filter(h => h.attribute === 'IRON').length,
@@ -26,12 +89,6 @@ export default function AnalyticsScreen() {
         };
     }, [habits]);
 
-    // Coherence calculation
-    const coherence = useMemo(() => {
-        const total = angelScore + simioScore;
-        if (total === 0) return 50;
-        return Math.round((angelScore / total) * 100);
-    }, [angelScore, simioScore]);
 
     return (
         <SafeAreaView className="flex-1 bg-deep-black">
@@ -39,170 +96,139 @@ export default function AnalyticsScreen() {
                 <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
 
                     {/* Header */}
-                    <Animated.View
-                        entering={FadeInDown.delay(0).springify()}
-                        className="pt-12 pb-6 px-4 border-b border-border-subtle"
-                    >
+                    <Animated.View entering={FadeInDown.delay(0).springify()} className="pt-12 pb-6 px-4 border-b border-border-subtle">
                         <View className="flex-row items-center gap-3 mb-2">
-                            <IconSymbol name="chart.bar.fill" size={28} color="#F97316" />
+                            <IconSymbol name="chart.pie.fill" size={28} color="#F97316" />
                             <Text className="text-text-primary font-black text-3xl uppercase tracking-wider font-display">
-                                ESTADÍSTICAS
+                                ANALÍTICA
                             </Text>
                         </View>
                         <Text className="text-text-secondary text-sm">
-                            Análisis de tu progreso
+                            Profundidad del sistema
                         </Text>
                     </Animated.View>
 
-                    {/* Consciousness Rank Card */}
-                    <Animated.View
-                        entering={FadeInDown.delay(100).springify()}
-                        className="mx-4 mt-6"
-                    >
-                        <SkiaGlassPane
-                            height={undefined} // Let flex handle it
-                            cornerRadius={20}
-                            backgroundColor="rgba(20, 20, 23, 0.6)"
-                            shadowColor="rgba(249, 115, 22, 0.15)"
-                            borderColor="rgba(249, 115, 22, 0.2)"
-                            borderWidth={0.5}
-                        >
+                    {/* 1. WEEKLY CHART */}
+                    <Animated.View entering={FadeInDown.delay(100).springify()} className="mx-4 mt-6">
+                        <SkiaGlassPane height={undefined} cornerRadius={20} backgroundColor="rgba(20, 20, 23, 0.6)">
                             <View className="p-6">
-                                <View className="flex-row items-center justify-between mb-4">
+                                <View className="flex-row items-center justify-between mb-6">
                                     <Text className="text-text-secondary text-xs uppercase tracking-wider font-bold font-label">
-                                        Rango de Consciencia
+                                        Rendimiento Semanal
                                     </Text>
-                                    <IconSymbol name="brain" size={20} color="#F97316" />
-                                </View>
-                                <Text className="text-text-primary font-black text-4xl mb-2 font-display">
-                                    {consciousnessRank}
-                                </Text>
-                                <Text className="text-text-tertiary text-sm font-label">
-                                    {consciousnessRank === 'BRONCE' && 'Reactividad - Gratificación inmediata'}
-                                    {consciousnessRank === 'PLATA' && 'Ego - Comparación y estatus'}
-                                    {consciousnessRank === 'ORO' && 'Propósito - Valores intrínsecos'}
-                                    {consciousnessRank === 'INFINITO' && 'Desapego - Placer del camino'}
-                                </Text>
-                            </View>
-                        </SkiaGlassPane>
-                    </Animated.View>
-
-                    {/* Angel vs Simio - Dualidad */}
-                    <Animated.View
-                        entering={FadeInDown.delay(150).springify()}
-                        className="mx-4 mt-6"
-                    >
-                        <SkiaGlassPane
-                            height={undefined}
-                            cornerRadius={20}
-                            backgroundColor="rgba(20, 20, 23, 0.6)"
-                            shadowColor="rgba(59, 130, 246, 0.15)"
-                            borderColor="rgba(255, 255, 255, 0.1)"
-                        >
-                            <View className="py-2">
-                                <PortalView />
-                            </View>
-                        </SkiaGlassPane>
-                    </Animated.View>
-
-                    {/* Attribute Distribution */}
-                    <Animated.View
-                        entering={FadeInDown.delay(200).springify()}
-                        className="mx-4 mt-6"
-                    >
-                        <SkiaGlassPane
-                            height={undefined}
-                            cornerRadius={20}
-                            backgroundColor="rgba(20, 20, 23, 0.6)"
-                        >
-                            <View className="p-6">
-                                <View className="flex-row items-center justify-between mb-4">
-                                    <Text className="text-text-secondary text-xs uppercase tracking-wider font-bold font-label">
-                                        Distribución de Atributos
-                                    </Text>
-                                    <Text className="text-text-tertiary text-xs font-mono">
-                                        {habits.length} protocolos
-                                    </Text>
+                                    <Text className="text-forge-orange font-bold text-xs">{weeklyData.reduce((acc, curr) => acc + curr.count, 0)} Completados</Text>
                                 </View>
 
-                                <View className="gap-4">
-                                    {[
-                                        { key: 'FIRE', label: 'FUEGO', icon: 'flame.fill', color: '#EF4444' },
-                                        { key: 'IRON', label: 'HIERRO', icon: 'hammer.fill', color: '#6B7280' },
-                                        { key: 'STEEL', label: 'ACERO', icon: 'shield.fill', color: '#9CA3AF' },
-                                        { key: 'FOCUS', label: 'FOCO', icon: 'eye.fill', color: '#3B82F6' },
-                                    ].map((attr) => {
-                                        const count = attributeStats[attr.key as keyof typeof attributeStats];
-                                        const percentage = habits.length ? (count / habits.length) * 100 : 0;
-
-                                        return (
-                                            <View key={attr.key}>
-                                                <View className="flex-row items-center justify-between mb-2">
-                                                    <View className="flex-row items-center gap-2">
-                                                        <IconSymbol name={attr.icon as any} size={16} color={attr.color} />
-                                                        <Text className="text-text-primary font-bold text-sm font-label tracking-wide">
-                                                            {attr.label}
-                                                        </Text>
-                                                    </View>
-                                                    <Text className="text-text-secondary text-sm font-mono font-bold">
-                                                        {count}
-                                                    </Text>
-                                                </View>
-                                                <View className="h-2 bg-black/40 rounded-full overflow-hidden border border-white/5">
-                                                    <View
-                                                        className="h-full"
-                                                        style={{
-                                                            width: `${percentage}%`,
-                                                            backgroundColor: attr.color
-                                                        }}
-                                                    />
-                                                </View>
+                                <View className="flex-row items-end justify-between h-32 px-2">
+                                    {weeklyData.map((d, i) => (
+                                        <View key={i} className="items-center gap-2" style={{ width: (width - 80) / 7 }}>
+                                            {/* Bar */}
+                                            <View className="w-full bg-white/5 rounded-t-sm relative overflow-hidden"
+                                                style={{ height: '100%' }}>
+                                                <View
+                                                    className={`absolute bottom-0 w-full rounded-t-sm ${d.full ? 'bg-forge-orange' : 'bg-white/20'}`}
+                                                    style={{ height: `${(d.count / maxDaily) * 100}%` }}
+                                                />
                                             </View>
-                                        );
-                                    })}
+                                            {/* Label */}
+                                            <Text className={`text-[10px] font-bold ${d.date.getDay() === new Date().getDay() ? 'text-white' : 'text-white/30'}`}>
+                                                {d.day}
+                                            </Text>
+                                        </View>
+                                    ))}
                                 </View>
                             </View>
                         </SkiaGlassPane>
                     </Animated.View>
 
-                    {/* Anti-Gravity Score */}
-                    <Animated.View
-                        entering={FadeInDown.delay(250).springify()}
-                        className="mx-4 mt-6 mb-8"
-                    >
-                        <SkiaGlassPane
-                            height={undefined}
-                            cornerRadius={20}
-                            backgroundColor="rgba(250, 204, 21, 0.05)"
-                            borderColor="rgba(250, 204, 21, 0.3)"
-                            borderWidth={0.5}
-                            shadowColor="rgba(250, 204, 21, 0.1)"
-                        >
-                            <View className="p-6">
-                                <View className="flex-row items-center justify-between mb-4">
-                                    <Text className="text-text-secondary text-xs uppercase tracking-wider font-bold font-label">
-                                        Puntuación Anti-Gravedad
-                                    </Text>
-                                    <IconSymbol name="arrow.up.circle.fill" size={24} color="#FACC15" />
+                    {/* 2. INSIGHTS ROW */}
+                    <View className="flex-row gap-4 mx-4 mt-6">
+                        {/* Master Component */}
+                        <Animated.View entering={FadeInDown.delay(200).springify()} className="flex-1">
+                            <SkiaGlassPane height={160} cornerRadius={16} backgroundColor="rgba(16, 185, 129, 0.1)" borderColor="rgba(16, 185, 129, 0.2)">
+                                <View className="p-4 flex-1 justify-between">
+                                    <View>
+                                        <IconSymbol name="crown.fill" size={24} color="#10B981" />
+                                        <Text className="text-emerald-400 font-bold text-[10px] uppercase mt-2 tracking-wider">PROTOCOLO MAESTRO</Text>
+                                    </View>
+                                    <View>
+                                        <Text className="text-white font-black text-lg leading-6 mb-1" numberOfLines={2}>
+                                            {insights.best?.title || "Sin datos"}
+                                        </Text>
+                                        <Text className="text-white/50 text-xs font-mono">
+                                            Racha: {insights.best?.streak || 0}
+                                        </Text>
+                                    </View>
                                 </View>
-                                <Text className="text-text-primary font-black text-6xl mb-2 font-display text-center" style={{ textShadowColor: '#FACC15', textShadowRadius: 10 }}>
-                                    {Math.round(antiGravityScore)}
-                                </Text>
-                                <View className="h-3 bg-black/40 rounded-full overflow-hidden border border-white/10 mt-2">
-                                    <View
-                                        className="h-full bg-gradient-to-r from-yellow-500 to-orange-500"
-                                        style={{ width: `${antiGravityScore}%`, backgroundColor: '#FACC15' }}
-                                    />
+                            </SkiaGlassPane>
+                        </Animated.View>
+
+                        {/* Weak Link Component */}
+                        <Animated.View entering={FadeInDown.delay(250).springify()} className="flex-1">
+                            <SkiaGlassPane height={160} cornerRadius={16} backgroundColor="rgba(239, 68, 68, 0.1)" borderColor="rgba(239, 68, 68, 0.2)">
+                                <View className="p-4 flex-1 justify-between">
+                                    <View>
+                                        <IconSymbol name="exclamationmark.triangle.fill" size={24} color="#EF4444" />
+                                        <Text className="text-red-400 font-bold text-[10px] uppercase mt-2 tracking-wider">ESLABÓN DÉBIL</Text>
+                                    </View>
+                                    <View>
+                                        <Text className="text-white font-black text-lg leading-6 mb-1" numberOfLines={2}>
+                                            {insights.worst?.title || "Impecable"}
+                                        </Text>
+                                        <Text className="text-white/50 text-xs font-mono">
+                                            {insights.worst ? "Requiere atención" : "Sin fallas críticas"}
+                                        </Text>
+                                    </View>
                                 </View>
-                                <Text className="text-text-tertiary text-sm mt-3 text-center font-label italic opacity-80">
-                                    "Tu capacidad de elevarte sobre la gravedad del caos"
-                                </Text>
+                            </SkiaGlassPane>
+                        </Animated.View>
+                    </View>
+
+                    {/* 3. RANK & ANTIGRAVITY (Compact) */}
+                    <Animated.View entering={FadeInDown.delay(300).springify()} className="mx-4 mt-6">
+                        <SkiaGlassPane height={undefined} cornerRadius={20} backgroundColor="rgba(20, 20, 23, 0.6)">
+                            <View className="p-6 flex-row items-center justify-between">
+                                <View>
+                                    <Text className="text-text-secondary text-xs uppercase font-bold font-label mb-1">Rango Actual</Text>
+                                    <Text className="text-white font-black text-2xl font-display">{consciousnessRank}</Text>
+                                </View>
+                                <View className="h-10 w-px bg-white/10" />
+                                <View className="items-end">
+                                    <Text className="text-text-secondary text-xs uppercase font-bold font-label mb-1">Puntuación A.G.</Text>
+                                    <Text className="text-yellow-400 font-black text-2xl font-display">{Math.round(antiGravityScore)}</Text>
+                                </View>
+                            </View>
+                        </SkiaGlassPane>
+                    </Animated.View>
+
+                    {/* 4. ATTRIBUTES (Simple Bars) */}
+                    <Animated.View entering={FadeInDown.delay(350).springify()} className="mx-4 mt-6 mb-8">
+                        <SkiaGlassPane height={undefined} cornerRadius={20} backgroundColor="rgba(20, 20, 23, 0.6)">
+                            <View className="p-5 gap-4">
+                                <Text className="text-text-secondary text-xs uppercase font-bold font-label">Balance de Elementos</Text>
+                                {[
+                                    { key: 'FIRE', label: 'FUEGO', color: '#EF4444' },
+                                    { key: 'IRON', label: 'HIERRO', color: '#6B7280' },
+                                    { key: 'STEEL', label: 'ACERO', color: '#9CA3AF' },
+                                    { key: 'FOCUS', label: 'FOCO', color: '#3B82F6' },
+                                ].map(attr => (
+                                    <View key={attr.key} className="flex-row items-center gap-3">
+                                        <Text className="text-white/60 font-bold text-[10px] w-12">{attr.label}</Text>
+                                        <View className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                                            <View className="h-full rounded-full"
+                                                style={{
+                                                    backgroundColor: attr.color,
+                                                    width: `${habits.length ? (attributeStats[attr.key as keyof typeof attributeStats] / habits.length) * 100 : 0}%`
+                                                }}
+                                            />
+                                        </View>
+                                    </View>
+                                ))}
                             </View>
                         </SkiaGlassPane>
                     </Animated.View>
 
                     <View className="h-24" />
-
                 </ScrollView>
             </GradientBackground>
         </SafeAreaView>

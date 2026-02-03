@@ -123,6 +123,72 @@ export default function GuideScreen() {
                         </SkiaGlassPane>
                     </Animated.View>
 
+                    {/* Section 4: The 4 Elements */}
+                    <Animated.View entering={FadeInRight.delay(500).springify()} className="mb-8">
+                        <SkiaGlassPane height={undefined} cornerRadius={20} backgroundColor="rgba(30, 30, 35, 0.6)" borderColor="rgba(255,255,255,0.1)">
+                            <View className="p-6">
+                                <View className="flex-row items-center gap-3 mb-6">
+                                    <IconSymbol name="square.grid.2x2.fill" size={24} color="#10B981" />
+                                    <Text className="text-white font-bold text-xl uppercase">Los 4 Elementos</Text>
+                                </View>
+
+                                <View className="gap-4">
+                                    {/* FUEGO */}
+                                    <View className="flex-row gap-4 items-start">
+                                        <View className="w-10 h-10 rounded-lg bg-orange-500/10 items-center justify-center border border-orange-500/20">
+                                            <IconSymbol name="flame.fill" size={20} color="#F97316" />
+                                        </View>
+                                        <View className="flex-1">
+                                            <Text className="text-orange-400 font-black text-sm uppercase tracking-wider mb-1">FUEGO (MOMENTUM)</Text>
+                                            <Text className="text-gray-400 text-xs leading-5">
+                                                Tu capacidad de mantener la racha viva. Es la intensidad con la que atacas tus objetivos diarios. Si se apaga, te detienes.
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    {/* ACERO */}
+                                    <View className="flex-row gap-4 items-start">
+                                        <View className="w-10 h-10 rounded-lg bg-blue-500/10 items-center justify-center border border-blue-500/20">
+                                            <IconSymbol name="shield.fill" size={20} color="#3B82F6" />
+                                        </View>
+                                        <View className="flex-1">
+                                            <Text className="text-blue-400 font-black text-sm uppercase tracking-wider mb-1">ACERO (DISCIPLINA)</Text>
+                                            <Text className="text-gray-400 text-xs leading-5">
+                                                Hacerlo aunque no tengas ganas. La estructura rígida que sostiene tu vida cuando la motivación falla.
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    {/* HIERRO */}
+                                    <View className="flex-row gap-4 items-start">
+                                        <View className="w-10 h-10 rounded-lg bg-gray-500/10 items-center justify-center border border-gray-500/20">
+                                            <IconSymbol name="dumbbell.fill" size={20} color="#9CA3AF" />
+                                        </View>
+                                        <View className="flex-1">
+                                            <Text className="text-gray-300 font-black text-sm uppercase tracking-wider mb-1">HIERRO (RESISTENCIA)</Text>
+                                            <Text className="text-gray-400 text-xs leading-5">
+                                                Fortaleza física y mental. Tu capacidad de soportar la presión, el dolor y la incomodidad sin romperte.
+                                            </Text>
+                                        </View>
+                                    </View>
+
+                                    {/* FOCO */}
+                                    <View className="flex-row gap-4 items-start">
+                                        <View className="w-10 h-10 rounded-lg bg-purple-500/10 items-center justify-center border border-purple-500/20">
+                                            <IconSymbol name="scope" size={20} color="#8B5CF6" />
+                                        </View>
+                                        <View className="flex-1">
+                                            <Text className="text-purple-400 font-black text-sm uppercase tracking-wider mb-1">FOCO (CLARIDAD)</Text>
+                                            <Text className="text-gray-400 text-xs leading-5">
+                                                Precisión en la acción. Saber exactamente qué hacer y hacerlo sin distracciones. La mente afilada.
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                        </SkiaGlassPane>
+                    </Animated.View>
+
                     {/* Footer */}
                     <View className="items-center mt-4 mb-8">
                         <Text className="text-white/30 text-xs italic">

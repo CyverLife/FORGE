@@ -18,6 +18,17 @@ export interface GamificationState {
     streak: number;
 }
 
+export interface RankingEntry {
+    id: string;
+    name: string;
+    avatar_url: string;
+    xp: number;
+    level: number;
+    streak: number;
+    rank: number;
+    consciousness_rank: string;
+}
+
 export function useGamification() {
     const { session } = useAuth();
     const [stats, setStats] = useState<GamificationState>({
@@ -148,5 +159,36 @@ export function useGamification() {
         // In real app, would call Supabase RPC 'rebirth_user'
     };
 
-    return { ...stats, rebirth };
+    const getLeaderboard = async (): Promise<RankingEntry[]> => {
+        // Removed fields that might be missing in the schema to prevent crashes
+        // We select basic fields. note: we removed 'current_streak' and 'name' to avoid 42703 error
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('id, arrow_url:avatar_url, xp, level, consciousness_rank')
+            .order('xp', { ascending: false })
+            .limit(50);
+
+        if (error) {
+            console.error('Error fetching leaderboard:', error);
+            return [];
+        }
+
+        if (!data || data.length === 0) {
+            console.log('Leaderboard empty or no data');
+            return [];
+        }
+
+        return data.map((user: any, index: number) => ({
+            id: user.id,
+            name: user.username || `Agente ${user.id?.slice(0, 4).toUpperCase()}` || 'Desconocido',
+            avatar_url: user.arrow_url || user.avatar_url,
+            xp: user.xp || 0,
+            level: user.level || 1,
+            streak: 0, // Fallback safe
+            rank: index + 1,
+            consciousness_rank: (user.consciousness_rank as any) || 'BRONCE'
+        }));
+    };
+
+    return { ...stats, rebirth, getLeaderboard };
 }

@@ -24,6 +24,7 @@ export default function VisionScreen() {
     // State for Text Style Modal
     const [editingStyleId, setEditingStyleId] = useState<string | null>(null);
     const [tempTextStyle, setTempTextStyle] = useState<VisionEntry['textStyle']>();
+    const [activeLineIndex, setActiveLineIndex] = useState<number>(0);
 
     // Scale and Rotation for Focus Transition
     const focusScale = useSharedValue(1);
@@ -128,51 +129,66 @@ export default function VisionScreen() {
                                     currentVision.textStyle?.position === 'top-right' ? 'top-10 right-8 items-end' :
                                         currentVision.textStyle?.position === 'top-left' ? 'top-10 left-8 items-start' :
                                             currentVision.textStyle?.position === 'center' ? 'inset-0 items-center justify-center' :
-                                                'bottom-10 right-8 items-end'  // default bottom-right
+                                                'bottom-10 right-8 items-end'
                                     }`}>
-                                    <Text
-                                        className="uppercase italic leading-none"
-                                        style={{
-                                            fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto', // Fallback or use custom font if loaded
-                                            fontWeight: currentVision.textStyle?.fontFamily === 'display' ? '900' :
-                                                currentVision.textStyle?.fontFamily === 'body' ? '600' : '300',
-                                            color: currentVision.textStyle?.color1 || '#3B82F6',
-                                            fontSize: currentVision.textStyle?.fontSize1 || 36,
-                                            textShadowColor: 'rgba(0,0,0,0.8)',
-                                            textShadowOffset: { width: 0, height: 2 },
-                                            textShadowRadius: 10
-                                        }}
-                                    >
-                                        {currentVision.title.split(' ')[0]}
-                                    </Text>
-                                    <Text
-                                        className="uppercase tracking-tighter -mt-2"
-                                        style={{
-                                            fontFamily: Platform.OS === 'ios' ? 'System' : 'Roboto',
-                                            fontWeight: currentVision.textStyle?.fontFamily === 'display' ? '900' :
-                                                currentVision.textStyle?.fontFamily === 'body' ? '600' : '300',
-                                            color: currentVision.textStyle?.color2 || '#FFFFFF',
-                                            fontSize: currentVision.textStyle?.fontSize2 || 28,
-                                            textShadowColor: 'rgba(0,0,0,0.8)',
-                                            textShadowOffset: { width: 0, height: 2 },
-                                            textShadowRadius: 10
-                                        }}
-                                    >
-                                        {currentVision.title.split(' ').slice(1).join(' ') || ''}
-                                    </Text>
+                                    {(currentVision.textStyle?.lines || []).map((line, index) => {
+                                        let fontFamily: any = Platform.OS === 'ios' ? 'System' : 'Roboto';
+                                        let fontWeight: any = 'bold';
+
+                                        switch (line.fontFamily) {
+                                            case 'oswald':
+                                                fontFamily = 'Oswald_700Bold';
+                                                fontWeight = undefined; // Font file handles weight
+                                                break;
+                                            case 'playfair':
+                                                fontFamily = 'PlayfairDisplay_700Bold';
+                                                fontWeight = undefined;
+                                                break;
+                                            case 'display':
+                                                fontWeight = '900';
+                                                break;
+                                            case 'body':
+                                                fontWeight = '600';
+                                                break;
+                                            case 'label':
+                                                fontWeight = '300';
+                                                break;
+                                        }
+
+                                        return (
+                                            <Text
+                                                key={index}
+                                                className="uppercase leading-none"
+                                                style={{
+                                                    fontFamily,
+                                                    fontWeight,
+                                                    color: line.color,
+                                                    fontSize: line.fontSize,
+                                                    textShadowColor: 'rgba(0,0,0,0.8)',
+                                                    textShadowOffset: { width: 0, height: 2 },
+                                                    textShadowRadius: 10,
+                                                    marginBottom: -4
+                                                }}
+                                            >
+                                                {currentVision.title.split('\n')[index] || ''}
+                                            </Text>
+                                        );
+                                    })}
                                 </View>
 
                                 <TouchableOpacity
                                     onPress={() => {
                                         setEditingStyleId(currentVision.id);
                                         setTempTextStyle(currentVision.textStyle || {
-                                            color1: '#3B82F6',
-                                            color2: '#FFFFFF',
-                                            fontSize1: 36,
-                                            fontSize2: 28,
-                                            fontFamily: 'display',
+                                            lines: [
+                                                { color: '#3B82F6', fontSize: 36, fontFamily: 'display' },
+                                                { color: '#FFFFFF', fontSize: 28, fontFamily: 'body' },
+                                                { color: '#FFFFFF', fontSize: 28, fontFamily: 'body' }
+                                            ],
                                             position: 'bottom-right'
                                         });
+                                        // Auto-Select the first line or previously selected? Default 0
+                                        setActiveLineIndex(0);
                                         setTempTitle(currentVision.title);
                                     }}
                                     className="absolute top-6 right-6 bg-black/40 p-2 rounded-full border border-white/20"
@@ -332,117 +348,150 @@ export default function VisionScreen() {
                                 contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
                             >
 
-                                {/* Title Edit */}
+                                {/* Title Edit - Split into 3 Lines */}
                                 <View className="mb-8">
-                                    <Text className="text-forge-orange text-[10px] font-black uppercase tracking-[0.2em] mb-3">CONTENIDO</Text>
+                                    <Text className="text-forge-orange text-[10px] font-black uppercase tracking-[0.2em] mb-3">CONTENIDO (3 LÍNEAS)</Text>
+
+                                    {/* Line 1 Input */}
+                                    <Text className="text-white/40 text-[10px] uppercase font-bold mb-2">LÍNEA 1 (ESTILO PRINCIPAL)</Text>
                                     <TextInput
-                                        className="bg-white/5 border border-white/10 p-4 rounded-xl text-white font-black text-xl font-display"
-                                        placeholder="EJ: INVOCA DESEOS"
+                                        className="bg-white/5 border border-white/10 p-4 rounded-xl text-white font-black text-xl font-display mb-4"
+                                        placeholder="EJ: INVOCA"
                                         placeholderTextColor="#444"
-                                        value={tempTitle}
-                                        onChangeText={setTempTitle}
+                                        value={tempTitle.split('\n')[0] || ''}
+                                        onChangeText={(text) => {
+                                            const parts = tempTitle.split('\n');
+                                            const l2 = parts[1] || '';
+                                            const l3 = parts[2] || '';
+                                            setTempTitle(`${text.toUpperCase()}\n${l2}\n${l3}`);
+                                        }}
                                         autoCapitalize="characters"
-                                        multiline={false}
+                                    />
+
+                                    {/* Line 2 Input */}
+                                    <Text className="text-white/40 text-[10px] uppercase font-bold mb-2">LÍNEA 2 (ESTILO SECUNDARIO)</Text>
+                                    <TextInput
+                                        className="bg-white/5 border border-white/10 p-4 rounded-xl text-white font-bold text-lg font-body mb-4"
+                                        placeholder="EJ: DESEOS"
+                                        placeholderTextColor="#444"
+                                        value={tempTitle.split('\n')[1] || ''}
+                                        onChangeText={(text) => {
+                                            const parts = tempTitle.split('\n');
+                                            const l1 = parts[0] || '';
+                                            const l3 = parts[2] || '';
+                                            setTempTitle(`${l1}\n${text.toUpperCase()}\n${l3}`);
+                                        }}
+                                        autoCapitalize="characters"
+                                    />
+
+                                    {/* Line 3 Input */}
+                                    <Text className="text-white/40 text-[10px] uppercase font-bold mb-2">LÍNEA 3 (ESTILO SECUNDARIO)</Text>
+                                    <TextInput
+                                        className="bg-white/5 border border-white/10 p-4 rounded-xl text-white font-bold text-lg font-body"
+                                        placeholder="EJ: REALIDAD"
+                                        placeholderTextColor="#444"
+                                        value={tempTitle.split('\n')[2] || ''}
+                                        onChangeText={(text) => {
+                                            const parts = tempTitle.split('\n');
+                                            const l1 = parts[0] || '';
+                                            const l2 = parts[1] || '';
+                                            setTempTitle(`${l1}\n${l2}\n${text.toUpperCase()}`);
+                                        }}
+                                        autoCapitalize="characters"
                                     />
                                 </View>
 
-                                {/* Typography Section */}
-                                <View className="mb-8">
-                                    <Text className="text-forge-orange text-[10px] font-black uppercase tracking-[0.2em] mb-4">TIPOGRAFÍA</Text>
-                                    <View className="flex-row gap-3 mb-4">
-                                        {[
-                                            { id: 'display', label: 'IMPACT', fontFamily: 'System', fontWeight: '900' },
-                                            { id: 'body', label: 'MODERN', fontFamily: 'System', fontWeight: '600' },
-                                            { id: 'label', label: 'ELEGANT', fontFamily: 'System', fontWeight: '300' }
-                                        ].map(font => (
-                                            <TouchableOpacity
-                                                key={font.id}
-                                                onPress={() => setTempTextStyle(prev => ({ ...prev!, fontFamily: font.id as any }))}
-                                                className={`flex-1 py-3 px-2 rounded-xl border-2 items-center justify-center ${tempTextStyle?.fontFamily === font.id
-                                                    ? 'bg-white border-white'
-                                                    : 'bg-[#1A1A1A] border-white/10'
-                                                    }`}
-                                            >
-                                                <Text
-                                                    style={{ fontWeight: font.fontWeight as any }}
-                                                    className={`text-xs uppercase ${tempTextStyle?.fontFamily === font.id ? 'text-black' : 'text-gray-400'}`}
+                                {/* Line Selector Tabs */}
+                                <View className="flex-row mb-6 border-b border-white/10">
+                                    {[0, 1, 2].map(idx => (
+                                        <TouchableOpacity
+                                            key={idx}
+                                            onPress={() => setActiveLineIndex(idx)}
+                                            className={`px-4 py-3 mr-4 border-b-2 ${activeLineIndex === idx ? 'border-forge-orange' : 'border-transparent'}`}
+                                        >
+                                            <Text className={`font-black text-xs uppercase ${activeLineIndex === idx ? 'text-forge-orange' : 'text-white/40'}`}>
+                                                LÍNEA {idx + 1}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+
+                                {/* Active Line Customization */}
+                                <View className="mb-8 bg-[#1A1A1A] p-4 rounded-2xl border border-white/5">
+                                    <View className="flex-row items-center justify-between mb-6">
+                                        <Text className="text-white/60 text-[10px] uppercase font-bold tracking-widest">EDITANDO LÍNEA {activeLineIndex + 1}</Text>
+                                        <Text className="text-white font-bold text-xs">"{tempTitle.split('\n')[activeLineIndex] || '...'}"</Text>
+                                    </View>
+
+                                    {/* Typography */}
+                                    <Text className="text-white/40 text-[10px] uppercase font-bold mb-3">TIPOGRAFÍA</Text>
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6">
+                                        <View className="flex-row gap-3">
+                                            {[
+                                                { id: 'display', label: 'IMPACT', fontWeight: '900' },
+                                                { id: 'body', label: 'MODERN', fontWeight: '600' },
+                                                { id: 'label', label: 'THIN', fontWeight: '300' },
+                                                { id: 'oswald', label: 'OSWALD', fontWeight: 'bold' }, // Future support
+                                                { id: 'playfair', label: 'SERIF', fontWeight: 'bold' },
+                                            ].map(font => (
+                                                <TouchableOpacity
+                                                    key={font.id}
+                                                    onPress={() => {
+                                                        if (!tempTextStyle?.lines) return;
+                                                        const newLines = [...tempTextStyle.lines];
+                                                        newLines[activeLineIndex] = { ...newLines[activeLineIndex], fontFamily: font.id };
+                                                        setTempTextStyle({ ...tempTextStyle, lines: newLines });
+                                                    }}
+                                                    className={`py-2 px-4 rounded-lg border items-center justify-center ${tempTextStyle?.lines?.[activeLineIndex].fontFamily === font.id
+                                                        ? 'bg-white border-white'
+                                                        : 'bg-black/40 border-white/10'
+                                                        }`}
                                                 >
-                                                    {font.label}
-                                                </Text>
+                                                    <Text
+                                                        className={`text-[10px] uppercase ${tempTextStyle?.lines?.[activeLineIndex].fontFamily === font.id ? 'text-black font-black' : 'text-gray-400 font-bold'}`}
+                                                    >
+                                                        {font.label}
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    </ScrollView>
+
+                                    {/* Color */}
+                                    <Text className="text-white/40 text-[10px] uppercase font-bold mb-3">COLOR</Text>
+                                    <View className="flex-row justify-between mb-6">
+                                        {['#FFFFFF', '#3B82F6', '#F97316', '#EF4444', '#10B981', '#FBBF24', '#8B5CF6', '#EC4899'].map(color => (
+                                            <TouchableOpacity
+                                                key={color}
+                                                onPress={() => {
+                                                    if (!tempTextStyle?.lines) return;
+                                                    const newLines = [...tempTextStyle.lines];
+                                                    newLines[activeLineIndex] = { ...newLines[activeLineIndex], color };
+                                                    setTempTextStyle({ ...tempTextStyle, lines: newLines });
+                                                }}
+                                                className={`w-8 h-8 rounded-full border-2 ${tempTextStyle?.lines?.[activeLineIndex].color === color ? 'border-white scale-110' : 'border-transparent'}`}
+                                                style={{ backgroundColor: color }}
+                                            />
+                                        ))}
+                                    </View>
+
+                                    {/* Size */}
+                                    <Text className="text-white/40 text-[10px] uppercase font-bold mb-3">TAMAÑO</Text>
+                                    <View className="flex-row gap-2 bg-black/30 p-1 rounded-lg">
+                                        {[16, 24, 32, 40, 48, 56, 64].map(size => (
+                                            <TouchableOpacity
+                                                key={size}
+                                                onPress={() => {
+                                                    if (!tempTextStyle?.lines) return;
+                                                    const newLines = [...tempTextStyle.lines];
+                                                    newLines[activeLineIndex] = { ...newLines[activeLineIndex], fontSize: size };
+                                                    setTempTextStyle({ ...tempTextStyle, lines: newLines });
+                                                }}
+                                                className={`flex-1 py-2 items-center rounded-md ${tempTextStyle?.lines?.[activeLineIndex].fontSize === size ? 'bg-white/20' : ''}`}
+                                            >
+                                                <Text className="text-white/80 text-[10px]">{size}</Text>
                                             </TouchableOpacity>
                                         ))}
-                                    </View>
-                                </View>
-
-                                {/* Primary Word Customization */}
-                                <View className="mb-8 bg-[#1A1A1A] p-4 rounded-2xl border border-white/5">
-                                    <View className="flex-row items-center justify-between mb-4">
-                                        <Text className="text-white/60 text-[10px] uppercase font-bold tracking-widest">PRIMERA PALABRA</Text>
-                                        <Text className="text-white font-bold text-xs">"{tempTitle.split(' ')[0]}"</Text>
-                                    </View>
-
-                                    {/* Color Palette 1 */}
-                                    <View className="flex-row justify-between mb-4">
-                                        {['#FFFFFF', '#3B82F6', '#F97316', '#EF4444', '#10B981', '#FBBF24', '#8B5CF6'].map(color => (
-                                            <TouchableOpacity
-                                                key={color}
-                                                onPress={() => setTempTextStyle(prev => ({ ...prev!, color1: color }))}
-                                                className={`w-8 h-8 rounded-full border-2 ${tempTextStyle?.color1 === color ? 'border-white scale-110' : 'border-transparent'}`}
-                                                style={{ backgroundColor: color }}
-                                            />
-                                        ))}
-                                    </View>
-
-                                    {/* Size Slider 1 */}
-                                    <View className="flex-row items-center gap-4">
-                                        <Text className="text-white/40 text-[10px]">TAMAÑO</Text>
-                                        <View className="flex-1 flex-row gap-2 bg-black/30 p-1 rounded-lg">
-                                            {[24, 32, 40, 48, 56].map(size => (
-                                                <TouchableOpacity
-                                                    key={size}
-                                                    onPress={() => setTempTextStyle(prev => ({ ...prev!, fontSize1: size }))}
-                                                    className={`flex-1 py-2 items-center rounded-md ${tempTextStyle?.fontSize1 === size ? 'bg-white/20' : ''}`}
-                                                >
-                                                    <Text className="text-white/80 text-[10px]">{size}</Text>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </View>
-                                    </View>
-                                </View>
-
-                                {/* Secondary Text Customization */}
-                                <View className="mb-8 bg-[#1A1A1A] p-4 rounded-2xl border border-white/5">
-                                    <View className="flex-row items-center justify-between mb-4">
-                                        <Text className="text-white/60 text-[10px] uppercase font-bold tracking-widest">RESTO DEL TEXTO</Text>
-                                        <Text className="text-white font-bold text-xs">"{tempTitle.split(' ').slice(1).join(' ') || '...'}"</Text>
-                                    </View>
-
-                                    {/* Color Palette 2 */}
-                                    <View className="flex-row justify-between mb-4">
-                                        {['#FFFFFF', '#3B82F6', '#F97316', '#EF4444', '#10B981', '#FBBF24', '#8B5CF6'].map(color => (
-                                            <TouchableOpacity
-                                                key={color}
-                                                onPress={() => setTempTextStyle(prev => ({ ...prev!, color2: color }))}
-                                                className={`w-8 h-8 rounded-full border-2 ${tempTextStyle?.color2 === color ? 'border-white scale-110' : 'border-transparent'}`}
-                                                style={{ backgroundColor: color }}
-                                            />
-                                        ))}
-                                    </View>
-
-                                    {/* Size Slider 2 */}
-                                    <View className="flex-row items-center gap-4">
-                                        <Text className="text-white/40 text-[10px]">TAMAÑO</Text>
-                                        <View className="flex-1 flex-row gap-2 bg-black/30 p-1 rounded-lg">
-                                            {[16, 20, 24, 32, 40].map(size => (
-                                                <TouchableOpacity
-                                                    key={size}
-                                                    onPress={() => setTempTextStyle(prev => ({ ...prev!, fontSize2: size }))}
-                                                    className={`flex-1 py-2 items-center rounded-md ${tempTextStyle?.fontSize2 === size ? 'bg-white/20' : ''}`}
-                                                >
-                                                    <Text className="text-white/80 text-[10px]">{size}</Text>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </View>
                                     </View>
                                 </View>
 

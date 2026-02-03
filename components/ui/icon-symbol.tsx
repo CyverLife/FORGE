@@ -62,6 +62,7 @@ const MAPPING = {
   'person.circle.fill': 'account-circle',
   'scalemass.fill': 'balance',
   'exclamationmark.triangle.fill': 'warning',
+  'photo.stack.fill': 'collections',
 } as IconMapping;
 
 /**
