@@ -145,10 +145,21 @@ export function HabitsProvider({ children }: { children: React.ReactNode }) {
         setHabits(current => current.map(h => {
             if (h.id === habitId) {
                 const isCompleted = status === 'completed';
+
+                // Optimistically create the new log object
+                const newLog = {
+                    habit_id: habitId,
+                    user_id: session?.user?.id,
+                    status,
+                    completed_at: new Date().toISOString()
+                };
+
                 return {
                     ...h,
                     completed_today: isCompleted,
-                    streak: isCompleted ? h.streak + 1 : h.streak
+                    streak: isCompleted ? h.streak + 1 : h.streak,
+                    // Push the new log so lists/charts update instantly
+                    logs: h.logs ? [newLog, ...h.logs] : [newLog]
                 };
             }
             return h;

@@ -38,6 +38,7 @@ export interface Habit {
     sensory_slide?: SensorySlideData;
     essence_type?: 'ANGEL' | 'SIMIO' | 'NEUTRAL';
     portal_mantra?: string;
+    logs?: { status: string; completed_at: string; }[];
 }
 
 export interface ProfileState {

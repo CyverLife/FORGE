@@ -9,6 +9,7 @@ import { BADGES } from '@/constants/badges';
 import { FRAMES } from '@/constants/frames';
 import { useAuth } from '@/hooks/useAuth';
 import { useGamification } from '@/hooks/useGamification';
+import { useHabits } from '@/hooks/useHabits';
 import { useIsFocused } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,10 +20,16 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Dashboard() {
-  const { level, xp, rank } = useGamification();
+  const { level, xp, rank, streak } = useGamification();
+  const { habits } = useHabits();
   const { user } = useAuth();
   const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
+
+  // Calculate stats
+  const totalCompletions = React.useMemo(() => {
+    return habits.reduce((acc, h) => acc + (h.logs?.filter((l: any) => l.status === 'completed').length || 0), 0);
+  }, [habits]);
 
   // Extract name from email or metadata, fallback to 'INICIADO'
   const displayName = user?.user_metadata?.name || user?.email?.split('@')[0]?.toUpperCase() || 'INICIADO';
@@ -92,8 +99,6 @@ export default function Dashboard() {
                   contentFit="contain"
                 />
               </View>
-
-              {/* ... Top Row code unchanged ... */}
 
               {/* Avatar & Username */}
               <Animated.View
@@ -185,8 +190,8 @@ export default function Dashboard() {
                         <IconSymbol name="flame.fill" size={20} color="#F97316" />
                       </View>
                       <View>
-                        <Text className="text-text-primary font-black text-xl font-display">0</Text>
-                        <Text className="text-text-tertiary text-[10px] font-bold uppercase tracking-wider font-label">RACHA MÁXIMA</Text>
+                        <Text className="text-text-primary font-black text-xl font-display">{streak}</Text>
+                        <Text className="text-text-tertiary text-[10px] font-bold uppercase tracking-wider font-label">RACHA ACTUAL</Text>
                       </View>
                     </View>
                   </SkiaGlassPane>
@@ -213,7 +218,7 @@ export default function Dashboard() {
                         <IconSymbol name="checkmark.circle.fill" size={20} color="#22C55E" />
                       </View>
                       <View>
-                        <Text className="text-text-primary font-black text-xl font-display">0</Text>
+                        <Text className="text-text-primary font-black text-xl font-display">{totalCompletions}</Text>
                         <Text className="text-text-tertiary text-[10px] font-bold uppercase tracking-wider font-label">COMPLETADOS</Text>
                       </View>
                     </View>

@@ -29,10 +29,9 @@ export const CoherenceChart = () => {
         let currentY = CHART_HEIGHT / 2;
         skPath.moveTo(0, currentY);
 
-        decisions.forEach((d, index) => {
-            // Angel goes UP (lower Y), Ape goes DOWN (higher Y)
-            // Clamping to keep inside chart
-            const change = d.type === 'ANGEL' ? -20 : 20;
+        decisions.forEach((d: any, index) => {
+            // BRIGHTEN goes UP (lower Y), DARKEN goes DOWN (higher Y)
+            const change = d.decision_type === 'BRIGHTEN' ? -20 : 20;
             currentY = Math.max(PADDING_VERTICAL, Math.min(CHART_HEIGHT - PADDING_VERTICAL, currentY + change));
 
             // Smooth curve
@@ -42,7 +41,7 @@ export const CoherenceChart = () => {
                 const prevX = (index - 1) * stepX;
                 const curX = index * stepX;
                 const cp1x = prevX + (curX - prevX) / 2;
-                const cp1y = skPath.getLastPt().y; // Previous Y
+                const cp1y = skPath.getLastPt().y;
                 const cp2x = prevX + (curX - prevX) / 2;
                 const cp2y = currentY;
 
@@ -56,11 +55,11 @@ export const CoherenceChart = () => {
     // Calculate current coherence trend
     const trend = useMemo(() => {
         if (decisions.length < 2) return 0;
-        const last = decisions[decisions.length - 1];
-        return last.type === 'ANGEL' ? '+5%' : '-2%';
+        const last: any = decisions[decisions.length - 1];
+        return last.decision_type === 'BRIGHTEN' ? '+5%' : '-2%';
     }, [decisions]);
 
-    const isPositive = decisions.length > 0 && decisions[decisions.length - 1].type === 'ANGEL';
+    const isPositive = decisions.length > 0 && (decisions[decisions.length - 1] as any).decision_type === 'BRIGHTEN';
 
     return (
         <Animated.View
