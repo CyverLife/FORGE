@@ -33,8 +33,13 @@ export function GlobalAlertProvider({ children }: { children: React.ReactNode })
         setVisible(false);
     }, []);
 
+    const value = React.useMemo(() => ({
+        showAlert,
+        hideAlert
+    }), [showAlert, hideAlert]);
+
     return (
-        <GlobalAlertContext.Provider value={{ showAlert, hideAlert }}>
+        <GlobalAlertContext.Provider value={value}>
             {children}
             <GlobalAlertModal
                 visible={visible}

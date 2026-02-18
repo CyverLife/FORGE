@@ -40,9 +40,9 @@ export const Leaderboard = () => {
     const renderItem = ({ item, index }: { item: Profile; index: number }) => {
         const league = getLeague(item.anti_gravity_score);
         return (
-            <GlassPane className="mb-3 p-4 rounded-xl flex-row items-center border border-white/5" opacity={0.05} blurAmount={4}>
+            <GlassPane className="mb-3 p-4 rounded-xl flex-row items-center border border-white/5" intensity={10}>
                 <View className="w-8 items-center mr-2">
-                    <Text className={`font-bold text-lg ${index < 3 ? 'text-magma' : 'text-gray-500'}`}>#{index + 1}</Text>
+                    <Text className={`font-bold text-lg ${index < 3 ? 'text-molten-core' : 'text-gray-500'}`}>#{index + 1}</Text>
                 </View>
 
                 {/* Avatar */}
@@ -73,7 +73,7 @@ export const Leaderboard = () => {
         <View className="flex-1 w-full mt-4">
             <View className="mb-6 items-center">
                 <Text className="text-white font-bold text-2xl tracking-[4px]">ASCENSION BOARD</Text>
-                <Text className="text-magma text-xs tracking-widest uppercase">Global Hierarchy</Text>
+                <Text className="text-molten-core text-xs tracking-widest uppercase">Global Hierarchy</Text>
             </View>
 
             <FlatList

@@ -14,7 +14,7 @@ import { calculateNextLevelXp } from '@/lib/gamification';
 import React, { useMemo, useState } from 'react';
 import { Dimensions, ScrollView, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeOut } from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -29,6 +29,7 @@ type TabOption = 'Rendimiento' | 'Maestría' | 'Legado';
 export default function AnalyticsScreen() {
     const { habits } = useHabits();
     const { antiGravityScore, consciousnessRank, streak: globalStreak, xp, level, angelScore } = useGamification();
+    const insets = useSafeAreaInsets();
     const [activeTab, setActiveTab] = useState<TabOption>('Rendimiento');
 
     // 1. Weekly Data & Accuracy
@@ -109,9 +110,9 @@ export default function AnalyticsScreen() {
     const nextLevelXp = useMemo(() => calculateNextLevelXp(level || 1), [level]);
 
     return (
-        <SafeAreaView className="flex-1 bg-deep-black">
+        <View className="flex-1 bg-deep-black">
             <GradientBackground>
-                <View className="flex-1 px-4">
+                <View className="flex-1 px-4" style={{ paddingTop: insets.top }}>
 
                     {/* Header Fixed */}
                     <Animated.View entering={FadeInDown.delay(100).springify()} className="mb-6 mt-4">
@@ -270,6 +271,6 @@ export default function AnalyticsScreen() {
                     </ScrollView>
                 </View>
             </GradientBackground>
-        </SafeAreaView>
+        </View>
     );
 }

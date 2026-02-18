@@ -1,12 +1,19 @@
+import { AmbientBackground } from '@/components/AmbientBackground';
+import { useStreakStatus } from '@/hooks/useStreakStatus';
 import React from 'react';
 import { View } from 'react-native';
 
 export const AnimatedBackground = ({ children }: { children?: React.ReactNode }) => {
     // Heroes Academy Aesthetic: Deep Black with subtle grid
+    const streakStatus = useStreakStatus();
+
     return (
         <View style={{ flex: 1, backgroundColor: '#0E0E0E' }}>
+            {/* Dynamic Ambient Background */}
+            <AmbientBackground streakStatus={streakStatus} />
+
             {/* Premium Grid Pattern - Same as Splash */}
-            <View style={{ position: 'absolute', width: '100%', height: '100%', opacity: 1 }}>
+            <View style={{ position: 'absolute', width: '100%', height: '100%', opacity: 1, zIndex: 0 }}>
                 {/* Vertical Lines */}
                 {Array.from({ length: 8 }).map((_, i) => (
                     <View
@@ -37,7 +44,7 @@ export const AnimatedBackground = ({ children }: { children?: React.ReactNode })
                 ))}
             </View>
 
-            <View style={{ flex: 1 }}>{children}</View>
+            <View style={{ flex: 1, zIndex: 1 }}>{children}</View>
         </View>
     );
 };

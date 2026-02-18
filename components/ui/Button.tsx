@@ -9,14 +9,14 @@ interface ButtonProps extends TouchableOpacityProps {
 export const Button = ({ variant = 'primary', title, className, ...props }: ButtonProps) => {
     const baseStyle = "py-4 rounded-xl items-center justify-center";
     const variants = {
-        primary: "bg-magma shadow-lg shadow-magma/40",
-        secondary: "bg-smoke border border-white/10",
-        outline: "border border-magma bg-transparent",
+        primary: "bg-molten-core shadow-lg shadow-molten-core/40",
+        secondary: "bg-obsidian-plate/50 border border-white/10",
+        outline: "border border-molten-core bg-transparent",
     };
     const textStyles = {
-        primary: "text-white font-bold tracking-widest",
-        secondary: "text-white font-medium",
-        outline: "text-magma font-bold tracking-widest",
+        primary: "text-white font-bold tracking-widest font-display",
+        secondary: "text-white font-medium font-body",
+        outline: "text-molten-core font-bold tracking-widest font-display",
     };
 
     return (

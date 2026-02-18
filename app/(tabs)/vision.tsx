@@ -66,12 +66,12 @@ export default function VisionScreen() {
     }
 
     return (
-        <View className="flex-1 bg-[#09090B]" style={{ paddingTop: insets.top }}>
+        <View className="flex-1 bg-[#09090B]">
             <GradientBackground>
                 <ScrollView
                     className="flex-1"
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 100 }}
+                    contentContainerStyle={{ paddingBottom: 100, paddingTop: insets.top }}
                 >
                     {/* Header */}
                     <View className="px-6 py-6 flex-row items-center justify-between">

@@ -160,11 +160,9 @@ export function useGamification() {
     };
 
     const getLeaderboard = async (): Promise<RankingEntry[]> => {
-        // Removed fields that might be missing in the schema to prevent crashes
-        // We select basic fields. note: we removed 'current_streak' and 'name' to avoid 42703 error
         const { data, error } = await supabase
             .from('profiles')
-            .select('id, arrow_url:avatar_url, xp, level, consciousness_rank')
+            .select('id, username, avatar_url, xp, level, consciousness_rank, current_streak')
             .order('xp', { ascending: false })
             .limit(50);
 
@@ -174,17 +172,16 @@ export function useGamification() {
         }
 
         if (!data || data.length === 0) {
-            console.log('Leaderboard empty or no data');
             return [];
         }
 
         return data.map((user: any, index: number) => ({
             id: user.id,
-            name: user.username || `Agente ${user.id?.slice(0, 4).toUpperCase()}` || 'Desconocido',
-            avatar_url: user.arrow_url || user.avatar_url,
+            name: user.username || `Agente ${user.id?.slice(0, 4).toUpperCase()}`,
+            avatar_url: user.avatar_url,
             xp: user.xp || 0,
             level: user.level || 1,
-            streak: 0, // Fallback safe
+            streak: user.current_streak || 0,
             rank: index + 1,
             consciousness_rank: (user.consciousness_rank as any) || 'BRONCE'
         }));

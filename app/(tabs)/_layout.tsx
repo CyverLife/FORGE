@@ -13,22 +13,23 @@ export default function TabLayout() {
     <AnimatedBackground>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#F97316',
-          tabBarInactiveTintColor: '#6B7280',
+          tabBarActiveTintColor: '#FF3B00', // Molten Core
+          tabBarInactiveTintColor: '#C0C5CE', // Cold Steel
           headerShown: false,
           tabBarButton: HapticTab,
           tabBarStyle: {
-            backgroundColor: '#0E0E0E',
+            backgroundColor: '#050505', // Obsidian Void
             borderTopWidth: 1,
-            borderTopColor: '#2A2A2A',
+            borderTopColor: '#222222', // Obsidian Shard
             height: 90,
             paddingBottom: 30,
             paddingTop: 10,
             elevation: 0,
+            shadowOpacity: 0,
           },
           tabBarLabelStyle: {
+            fontFamily: 'Inter_700Bold',
             fontSize: 10,
-            fontWeight: 'bold',
             marginTop: 4,
           },
         }}>

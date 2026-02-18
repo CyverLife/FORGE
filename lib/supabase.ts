@@ -6,7 +6,13 @@ const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase credentials missing! Please check your .env file.');
+    console.error('------- CRITICAL ERROR -------');
+    console.error('Supabase credentials missing! Please check your .env file.');
+    console.error('EXPO_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'Set' : 'MISSING');
+    console.error('EXPO_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'Set' : 'MISSING');
+    console.error('------------------------------');
+} else {
+    console.log('✅ Supabase initialized with URL:', supabaseUrl);
 }
 
 export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder', {

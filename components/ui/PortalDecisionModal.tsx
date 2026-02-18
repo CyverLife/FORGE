@@ -115,19 +115,20 @@ export const PortalDecisionModal: React.FC<PortalDecisionModalProps> = ({
             transparent
             animationType="fade"
             onRequestClose={onClose}
+            statusBarTranslucent
         >
-            <View className="flex-1 bg-black/90 justify-center items-center px-6">
+            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 }}>
                 <Animated.View style={portalStyle} className="w-full max-w-md">
                     {/* Exit Button */}
                     <TouchableOpacity
                         onPress={onClose}
-                        className="absolute top-0 right-0 p-2 opacity-50 active:opacity-100 z-50"
+                        style={{ position: 'absolute', top: 40, right: 0, padding: 8, zIndex: 50, opacity: 0.8 }}
                     >
-                        <IconSymbol name="xmark.circle.fill" size={24} color="white" />
+                        <IconSymbol name="xmark.circle.fill" size={32} color="white" />
                     </TouchableOpacity>
 
                     {/* Portal Question */}
-                    <View className="items-center mb-8 mt-4">
+                    <View className="items-center mb-8 mt-12">
                         <Text className="text-text-primary font-black text-2xl text-center mb-2 font-display uppercase italic">
                             ¿Entrar al Portal?
                         </Text>

@@ -327,20 +327,20 @@ export function SquadsProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const value = React.useMemo(() => ({
+        squads,
+        activeSquad,
+        loading,
+        createSquad,
+        joinSquad,
+        leaveSquad,
+        setActiveSquad,
+        updateSquadHP,
+        refreshSquads: fetchSquads
+    }), [squads, activeSquad, loading, fetchSquads]);
+
     return (
-        <SquadsContext.Provider
-            value={{
-                squads,
-                activeSquad,
-                loading,
-                createSquad,
-                joinSquad,
-                leaveSquad,
-                setActiveSquad,
-                updateSquadHP,
-                refreshSquads: fetchSquads
-            }}
-        >
+        <SquadsContext.Provider value={value}>
             {children}
         </SquadsContext.Provider>
     );

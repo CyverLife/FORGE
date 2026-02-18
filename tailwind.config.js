@@ -5,34 +5,60 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Zinc Scale (Pro 2026 Standard)
-        'deep-black': '#09090b',      // Zinc 950 (was #0E0E0E)
-        'card-black': '#18181b',      // Zinc 900 (was #1A1A1A)
-        'border-subtle': '#27272a',   // Zinc 800 (was #2A2A2A)
+        // The Void (Backgrounds)
+        'obsidian-void': '#050505',   // Deepest black, absence of light
+        'obsidian-plate': '#131313',  // Solid matter, cards
+        'obsidian-shard': '#222222',  // Fragments, borders, heavy strokes
 
-        // FORGE Brand Colors (PRESERVED)
-        'forge-red': '#C21F1F',
-        'forge-orange': '#F97316',
-        'forge-ember': '#EF4444',
-        'forge-charcoal': '#1A1110',
-        'forge-obsidian': '#0F0505',
+        // Molten Core (Brand/Action)
+        'molten-core': '#FF3B00',     // The heart of the forge (Primary)
+        'molten-magma': '#C21F1F',    // Cooling edge (Secondary)
+        'molten-glow': '#FF9500',     // Heat radiation (Highlight)
 
-        // Premium Grays
+        // Cold Steel (Inactive/Structure)
+        'cold-steel': '#C0C5CE',      // Raw material
+        'cold-slate': '#1F1F1F',      // Unworked metal
+
+        // Ethereal (Effects)
+        'ethereal-haze': 'rgba(64, 64, 64, 0.2)', // Steam, smoke
+        'starlight': '#E0F7FA',       // Mastery, transcendence
+
+        // Semantic Aliases (Legacy Support -> New System)
+        'deep-black': '#050505',      // -> obsidian-void
+        'card-black': '#131313',      // -> obsidian-plate
+        'border-subtle': '#222222',   // -> obsidian-shard
+        'forge-red': '#FF3B00',       // -> molten-core (redefined for vibrance)
         'text-primary': '#FFFFFF',
-        'text-secondary': '#A1A1A1',
-        'text-tertiary': '#71717a',   // Zinc 500 (was #6B7280)
+        'text-secondary': '#C0C5CE',  // -> cold-steel
+        'text-tertiary': '#6B7280',
       },
       fontFamily: {
-        // Display font for titles and numbers (Bold)
         'display': ['Inter_700Bold', 'Inter', 'system-ui', 'sans-serif'],
-        // Body font for regular text
         'body': ['Inter_400Regular', 'Inter', 'system-ui', 'sans-serif'],
-        // Label font for small text (Light)
         'label': ['Inter_300Light', 'Inter', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         'card': '16px',
         'premium': '20px',
+      },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'slide-up': {
+          '0%': { transform: 'translateY(20px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        'pulse-slow': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.8' },
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 0.6s ease-out forwards',
+        'slide-up': 'slide-up 0.8s ease-out forwards',
+        'pulse-slow': 'pulse-slow 3s infinite',
       },
     },
   },

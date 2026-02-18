@@ -1,3 +1,4 @@
+import { Inter_300Light, Inter_400Regular, Inter_700Bold, useFonts as useInter } from '@expo-google-fonts/inter';
 import { Oswald_700Bold, useFonts as useOswald } from '@expo-google-fonts/oswald';
 import { PlayfairDisplay_700Bold, useFonts as usePlayfair } from '@expo-google-fonts/playfair-display';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavThemeProvider } from '@react-navigation/native';
@@ -25,7 +26,13 @@ export default function RootLayout() {
   const segments = useSegments();
   const router = useRouter();
 
-  const [fontsLoaded] = useOswald({
+  const [interLoaded] = useInter({
+    Inter_300Light,
+    Inter_400Regular,
+    Inter_700Bold,
+  });
+
+  const [oswaldLoaded] = useOswald({
     Oswald_700Bold,
   });
   const [playfairLoaded] = usePlayfair({
@@ -47,14 +54,16 @@ export default function RootLayout() {
     }
   }, [session, authLoading, segments]);
 
+  const allFontsLoaded = interLoaded && oswaldLoaded && playfairLoaded;
+
   useEffect(() => {
-    if (fontsLoaded && playfairLoaded && !authLoading) {
+    if (allFontsLoaded && !authLoading) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, playfairLoaded, authLoading]);
+  }, [allFontsLoaded, authLoading]);
 
   // Wait for fonts and auth check before rendering to avoid flashes
-  if (!fontsLoaded || !playfairLoaded || authLoading) {
+  if (!allFontsLoaded || authLoading) {
     return null;
   }
 

@@ -96,7 +96,7 @@ export const SkillTree = ({ attribute = 'FIRE' }: { attribute?: string }) => {
                         style={{ position: 'absolute', left: node.x - 40, top: node.y + 25, width: 80, alignItems: 'center' }}
                         activeOpacity={0.8}
                     >
-                        <GlassPane className="px-2 py-1 rounded-md" opacity={0.1}>
+                        <GlassPane className="px-2 py-1 rounded-md" intensity={20}>
                             <Text className={`text-[10px] font-bold ${node.unlocked ? 'text-white' : 'text-gray-600'}`}>
                                 {node.title}
                             </Text>

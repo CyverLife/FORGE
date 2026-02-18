@@ -14,6 +14,8 @@ interface StatsModalProps {
 
 type Tab = 'OVERVIEW' | 'SKILLS' | 'ASCENSION' | 'VISION';
 
+// ... (imports remain)
+
 export const StatsModal = ({ visible, onClose }: StatsModalProps) => {
     const { level, xp, antiGravityScore } = useGamification();
     const [activeTab, setActiveTab] = useState<Tab>('OVERVIEW');
@@ -32,18 +34,18 @@ export const StatsModal = ({ visible, onClose }: StatsModalProps) => {
                     <ScrollView showsVerticalScrollIndicator={false}>
                         {/* Main Level Card */}
                         <View className="items-center mb-8">
-                            <View className="w-32 h-32 rounded-full bg-magma/20 justify-center items-center border-4 border-magma/50 mb-4 shadow-lg shadow-magma/50">
-                                <Text className="text-magma text-5xl font-black">{level}</Text>
-                                <Text className="text-magma/80 text-xs font-bold tracking-widest uppercase">Level</Text>
+                            <View className="w-32 h-32 rounded-full bg-molten-core/20 justify-center items-center border-4 border-molten-core/50 mb-4 shadow-lg shadow-molten-core/50">
+                                <Text className="text-molten-core text-5xl font-black">{level}</Text>
+                                <Text className="text-molten-core/80 text-xs font-bold tracking-widest uppercase">Level</Text>
                             </View>
                             <Text className="text-white/60 text-sm font-medium tracking-wide">EXP: {xp} / {level * 100}</Text>
                             <View className="w-full h-2 bg-white/10 rounded-full mt-3 overflow-hidden">
-                                <View className="h-full bg-magma" style={{ width: `${(xp % (level * 100)) / level}%` }} />
+                                <View className="h-full bg-molten-core" style={{ width: `${(xp % (level * 100)) / level}%` }} />
                             </View>
                         </View>
 
                         {/* AntiGravity Status */}
-                        <GlassPane className="mb-4 p-4 rounded-xl border border-white/5" opacity={0.05} blurAmount={10}>
+                        <GlassPane className="mb-4 p-4 rounded-xl border border-white/5" intensity={20}>
                             <View className="flex-row items-center mb-2">
                                 <IconSymbol name="waveform.path.ecg" size={20} color="#10B981" />
                                 <Text className="text-white font-bold ml-2 text-lg">Anti-Gravity Score</Text>
@@ -90,7 +92,7 @@ export const StatsModal = ({ visible, onClose }: StatsModalProps) => {
             onRequestClose={onClose}
         >
             <View className="flex-1 bg-black/90 justify-center items-center px-4">
-                <GlassPane className="w-full h-[90%] rounded-3xl overflow-hidden" opacity={0.1} blurAmount={20}>
+                <GlassPane className="w-full h-[90%] rounded-3xl overflow-hidden" intensity={30}>
                     <View className="flex-1 p-4">
                         <View className="flex-row justify-between items-center mb-4">
                             <Text className="text-white text-xl font-bold tracking-tight">COCKPIT</Text>
@@ -105,9 +107,9 @@ export const StatsModal = ({ visible, onClose }: StatsModalProps) => {
                                 <TouchableOpacity
                                     key={tab}
                                     onPress={() => setActiveTab(tab)}
-                                    className={`flex-1 py-2 items-center rounded-lg ${activeTab === tab ? 'bg-magma/20' : ''}`}
+                                    className={`flex-1 py-2 items-center rounded-lg ${activeTab === tab ? 'bg-molten-core/20' : ''}`}
                                 >
-                                    <Text className={`text-[10px] font-bold ${activeTab === tab ? 'text-magma' : 'text-gray-500'}`}>
+                                    <Text className={`text-[10px] font-bold ${activeTab === tab ? 'text-molten-core' : 'text-gray-500'}`}>
                                         {tab}
                                     </Text>
                                 </TouchableOpacity>

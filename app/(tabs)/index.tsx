@@ -1,8 +1,9 @@
 import { CoherenceChart } from '@/components/ui/CoherenceChart';
+import { GlassPane } from '@/components/ui/GlassPane';
 import { GradientBackground } from '@/components/ui/GradientBackground';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { PortalView } from '@/components/ui/PortalView';
-import { SkiaGlassPane } from '@/components/ui/SkiaGlassPane';
+import { StreakCounter } from '@/components/ui/StreakCounter';
 import { TotemView } from '@/components/ui/TotemView';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 import { BADGES } from '@/constants/badges';
@@ -20,7 +21,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Dashboard() {
-  const { level, xp, rank, streak } = useGamification();
+  const { level, xp, rank, streak, antiGravityScore } = useGamification();
   const { habits } = useHabits();
   const { user } = useAuth();
   const isFocused = useIsFocused();
@@ -28,7 +29,12 @@ export default function Dashboard() {
 
   // Calculate stats
   const totalCompletions = React.useMemo(() => {
-    return habits.reduce((acc, h) => acc + (h.logs?.filter((l: any) => l.status === 'completed').length || 0), 0);
+    const total = habits.reduce((acc, h) => {
+      const completedCount = h.logs?.filter((l: any) => l.status === 'completed').length || 0;
+      return acc + completedCount;
+    }, 0);
+    console.log('[DASHBOARD] Total Completions Calculated:', total, 'Habits Count:', habits.length);
+    return total;
   }, [habits]);
 
   // Extract name from email or metadata, fallback to 'INICIADO'
@@ -39,17 +45,17 @@ export default function Dashboard() {
   const currentFrame = FRAMES.find(f => f.id === currentFrameId);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#09090B', paddingTop: insets.top }}>
+    <View style={{ flex: 1, backgroundColor: '#09090b' }}>
       <GradientBackground>
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
           <Animated.View
             key={isFocused ? 'focused' : 'unfocused'}
             entering={FadeInDown.duration(600).springify()}
-            style={{ flex: 1 }}
+            style={{ flex: 1, paddingTop: insets.top }}
           >
 
-            {/* Minimalist Grid Background */}
-            <View className="absolute top-0 left-0 w-full h-full pointer-events-none">
+            {/* Premium Grid Background */}
+            <View className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
               {Array.from({ length: 8 }).map((_, i) => (
                 <View
                   key={`v-${i}`}
@@ -59,7 +65,7 @@ export default function Dashboard() {
                     top: 0,
                     bottom: 0,
                     width: 1,
-                    backgroundColor: 'rgba(255,255,255,0.03)'
+                    backgroundColor: '#FFFFFF'
                   }}
                 />
               ))}
@@ -72,7 +78,7 @@ export default function Dashboard() {
                     left: 0,
                     right: 0,
                     height: 1,
-                    backgroundColor: 'rgba(255,255,255,0.03)'
+                    backgroundColor: '#FFFFFF'
                   }}
                 />
               ))}
@@ -81,21 +87,20 @@ export default function Dashboard() {
             {/* Header - Staggered Entrance */}
             <Animated.View
               entering={FadeInDown.delay(0).springify()}
-              className="pt-12 pb-6 px-4 border-b border-border-subtle"
+              className="pt-8 pb-6 px-4 border-b border-white/5 bg-black/20 backdrop-blur-md"
             >
 
-              {/* Header with Guide Access */}
-              <View className="items-center mb-6 relative">
+              <View className="items-center mb-8 relative">
                 <TouchableOpacity
                   onPress={() => router.push('/guide')}
-                  className="absolute left-2 top-2 z-20 bg-white/5 p-2 rounded-full border border-white/10 active:bg-white/10"
+                  className="absolute left-0 top-2 z-20 bg-white/5 p-2 rounded-full border border-white/10 active:bg-white/10"
                 >
-                  <IconSymbol name="book.fill" size={20} color="#9CA3AF" />
+                  <IconSymbol name="book.fill" size={20} color="#A1A1A1" />
                 </TouchableOpacity>
 
                 <Image
                   source={require('@/assets/images/forge_logo_final.png')}
-                  style={{ width: 180, height: 80 }}
+                  style={{ width: 140, height: 60 }}
                   contentFit="contain"
                 />
               </View>
@@ -103,44 +108,47 @@ export default function Dashboard() {
               {/* Avatar & Username */}
               <Animated.View
                 entering={FadeInDown.delay(100).springify()}
-                className="items-center mb-6"
+                className="items-center mb-8"
               >
                 <TouchableOpacity
                   onPress={() => router.navigate('/settings')}
                   activeOpacity={0.8}
                 >
-                  <View className="items-center justify-center mb-2">
+                  <View className="items-center justify-center mb-4">
                     <UserAvatar
                       url={user?.user_metadata?.avatar_url}
                       frame={currentFrame}
-                      size={128} // Increased from 96
+                      size={100}
                     />
                   </View>
 
-                  {/* Edit Badge */}
-                  <View className="absolute bottom-10 -right-2 bg-card-black/80 rounded-full p-1 border border-white/20">
+                  <View className="absolute bottom-10 -right-1 bg-card-black rounded-full p-2 border border-border-subtle shadow-lg">
                     <IconSymbol name="pencil" size={12} color="white" />
                   </View>
                 </TouchableOpacity>
 
-                <Text className="text-text-primary font-black text-2xl tracking-widest font-display mb-2">
+                <Text className="text-text-primary font-black text-2xl tracking-wider font-display mb-1 text-center">
                   {displayName}
                 </Text>
 
-                {/* Badges Display - Larger & No Ranks */}
-                <View className="flex-row items-center gap-3 mt-4 justify-center">
+                {/* Level Display */}
+                <Text className="text-molten-core font-bold text-xs tracking-widest font-label uppercase text-center mb-4">
+                  NIVEL {level} • {level < 10 ? 'INICIADO' : level < 30 ? 'ADEPT' : 'MASTER'}
+                </Text>
+
+                <View className="flex-row items-center gap-2 mt-1 justify-center flex-wrap px-4">
                   {(user?.user_metadata?.selected_badges || []).map((badgeId: string, index: number) => {
                     const badge = BADGES.find(b => b.id === badgeId || b.id === badgeId.toLowerCase().replace(/ /g, '_'));
-                    if (!badge || badge.type === 'RANK') return null; // Filter out Ranks
+                    if (!badge || badge.type === 'RANK') return null;
                     return (
                       <Animated.View
                         key={`badge-${index}`}
-                        entering={FadeInDown.delay(index * 100 + 200).springify()}
-                        className="bg-card-black/50 p-1.5 rounded-xl border border-white/10"
+                        entering={FadeInDown.springify().damping(18).stiffness(90).mass(1.2).delay(index * 50 + 300)}
+                        className="bg-white/5 p-1.5 rounded-xl border border-white/10"
                       >
                         <Image
                           source={badge.image}
-                          style={{ width: 48, height: 48 }} // Increased from 40
+                          style={{ width: 32, height: 32 }}
                           contentFit="contain"
                           cachePolicy="memory-disk"
                           transition={200}
@@ -150,164 +158,147 @@ export default function Dashboard() {
                   })}
                 </View>
 
-                {/* Rank Badge - Distinct Position Below */}
-                <View className="items-center mt-6">
-                  <Text className="text-white/30 text-[10px] uppercase tracking-widest mb-2 font-bold">Rango Actual</Text>
-                  {rank === 'BRONZE' && <Image source={require('@/assets/images/rank_bronze.png')} style={{ width: 140, height: 48 }} contentFit="contain" />}
-                  {rank === 'SILVER' && <Image source={require('@/assets/images/rank_silver.png')} style={{ width: 140, height: 48 }} contentFit="contain" />}
-                  {rank === 'GOLD' && <Image source={require('@/assets/images/rank_gold.png')} style={{ width: 140, height: 48 }} contentFit="contain" />}
-                  {rank === 'INFINITE' && <Image source={require('@/assets/images/rank_infinite.png')} style={{ width: 140, height: 48 }} contentFit="contain" />}
+                <View className="items-center mt-4">
+                  {rank && (
+                    <Image
+                      source={
+                        rank === 'BRONZE' ? require('@/assets/images/rank_bronze.png') :
+                          rank === 'SILVER' ? require('@/assets/images/rank_silver.png') :
+                            rank === 'GOLD' ? require('@/assets/images/rank_gold.png') :
+                              require('@/assets/images/rank_infinite.png')
+                      }
+                      style={{ width: 140, height: 44 }}
+                      contentFit="contain"
+                    />
+                  )}
                 </View>
               </Animated.View>
 
               {/* Level Progress Bar */}
               <Animated.View
-                entering={FadeInDown.delay(150).springify()}
-                className="flex-row items-center gap-3 mb-8 px-2"
+                entering={FadeInDown.springify().damping(18).stiffness(90).mass(1.2).delay(400)}
+                className="flex-col gap-2 mb-6 px-2"
               >
-                <Text className="text-text-primary text-3xl font-black italic font-display">
-                  {level}
-                </Text>
-                <View className="flex-1 h-5 bg-card-black overflow-hidden border border-border-subtle relative justify-center rounded-premium shadow-inner">
+                <View className="flex-row justify-between items-end mb-0.5">
+                  <Text className="text-text-tertiary text-[10px] font-bold font-label">XP PROGRESO</Text>
+                  <Text className="text-text-primary text-[10px] font-bold font-display">{Math.floor(xp % 100)} / 100</Text>
+                </View>
+                <View className="w-full h-2.5 bg-card-black/50 overflow-hidden border border-white/5 rounded-full">
                   <LinearGradient
-                    colors={['#EF4444', '#F97316']}
+                    colors={['#FF3B00', '#FF9500']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
-                    style={{ width: `${(xp % 100)}%`, height: '100%' }}
+                    style={{ width: `${(xp % 100)}%`, height: '100%', borderRadius: 999 }}
                   />
-                  <Text className="absolute self-center text-[10px] font-bold text-white/80 z-10 w-full text-center shadow-black/50">
-                    {Math.floor(xp % 100)} / 100 XP
-                  </Text>
                 </View>
               </Animated.View>
 
-              {/* Stats Grid - Staggered */}
-              <View className="flex-row flex-wrap gap-3 mb-6">
-                <Animated.View entering={FadeInDown.delay(200).springify()} className="flex-1 min-w-[45%]">
-                  <SkiaGlassPane height={undefined} cornerRadius={16} backgroundColor="rgba(20, 20, 23, 0.5)" borderColor="rgba(255, 255, 255, 0.08)">
-                    <View className="p-3 flex-row items-center gap-3">
-                      <View className="p-2 rounded-lg" style={{ backgroundColor: '#F9731615' }}>
-                        <IconSymbol name="flame.fill" size={20} color="#F97316" />
-                      </View>
-                      <View>
-                        <Text className="text-text-primary font-black text-xl font-display">{streak}</Text>
-                        <Text className="text-text-tertiary text-[10px] font-bold uppercase tracking-wider font-label">RACHA ACTUAL</Text>
-                      </View>
-                    </View>
-                  </SkiaGlassPane>
+              {/* Stats Grid - 4 components in 2x2 layout */}
+              <View className="flex-row flex-wrap gap-2 mb-6 justify-between">
+
+                <Animated.View entering={FadeInDown.springify().damping(18).stiffness(90).mass(1.2).delay(500)} style={{ flexBasis: '48%' }}>
+                  <StreakCounter streak={streak} />
                 </Animated.View>
 
-                <Animated.View entering={FadeInDown.delay(250).springify()} className="flex-1 min-w-[45%]">
-                  <SkiaGlassPane height={undefined} cornerRadius={16} backgroundColor="rgba(20, 20, 23, 0.5)" borderColor="rgba(255, 255, 255, 0.08)">
+                <Animated.View entering={FadeInDown.springify().damping(18).stiffness(90).mass(1.2).delay(550)} style={{ flexBasis: '48%' }}>
+                  <GlassPane intensity={20} borderOpacity={0.05} style={{ borderRadius: 20, overflow: 'hidden', backgroundColor: 'rgba(24, 24, 27, 0.6)' }}>
                     <View className="p-3 flex-row items-center gap-3">
-                      <View className="p-2 rounded-lg" style={{ backgroundColor: '#3B82F615' }}>
-                        <IconSymbol name="calendar" size={20} color="#3B82F6" />
+                      <View className="p-2 rounded-xl bg-blue-500/10">
+                        <IconSymbol name="calendar" size={18} color="#3B82F6" />
                       </View>
                       <View>
-                        <Text className="text-text-primary font-black text-xl font-display">1</Text>
-                        <Text className="text-text-tertiary text-[10px] font-bold uppercase tracking-wider font-label">DÍAS ACTIVO</Text>
+                        <Text className="text-text-primary font-black text-xl font-display">{Math.floor(antiGravityScore / 10)}</Text>
+                        <Text className="text-text-tertiary text-[9px] font-bold uppercase tracking-widest font-label">ESTADO</Text>
                       </View>
                     </View>
-                  </SkiaGlassPane>
+                  </GlassPane>
                 </Animated.View>
 
-                <Animated.View entering={FadeInDown.delay(300).springify()} className="flex-1 min-w-[45%]">
-                  <SkiaGlassPane height={undefined} cornerRadius={16} backgroundColor="rgba(20, 20, 23, 0.5)" borderColor="rgba(255, 255, 255, 0.08)">
+                <Animated.View entering={FadeInDown.springify().damping(18).stiffness(90).mass(1.2).delay(600)} style={{ flexBasis: '48%' }}>
+                  <GlassPane intensity={20} borderOpacity={0.05} style={{ borderRadius: 20, overflow: 'hidden', backgroundColor: 'rgba(24, 24, 27, 0.6)' }}>
                     <View className="p-3 flex-row items-center gap-3">
-                      <View className="p-2 rounded-lg" style={{ backgroundColor: '#22C55E15' }}>
-                        <IconSymbol name="checkmark.circle.fill" size={20} color="#22C55E" />
+                      <View className="p-2 rounded-xl bg-green-500/10">
+                        <IconSymbol name="checkmark.circle.fill" size={18} color="#22C55E" />
                       </View>
                       <View>
-                        <Text className="text-text-primary font-black text-xl font-display">{totalCompletions}</Text>
-                        <Text className="text-text-tertiary text-[10px] font-bold uppercase tracking-wider font-label">COMPLETADOS</Text>
+                        <Text className="text-text-primary font-black text-xl font-display">{totalCompletions || 0}</Text>
+                        <Text className="text-text-tertiary text-[9px] font-bold uppercase tracking-widest font-label">HECHOS</Text>
                       </View>
                     </View>
-                  </SkiaGlassPane>
+                  </GlassPane>
                 </Animated.View>
 
-                <Animated.View entering={FadeInDown.delay(350).springify()} className="flex-1 min-w-[45%]">
-                  <SkiaGlassPane height={undefined} cornerRadius={16} backgroundColor="rgba(20, 20, 23, 0.5)" borderColor="rgba(255, 255, 255, 0.08)">
+                <Animated.View entering={FadeInDown.springify().damping(18).stiffness(90).mass(1.2).delay(650)} style={{ flexBasis: '48%' }}>
+                  <GlassPane intensity={20} borderOpacity={0.05} style={{ borderRadius: 20, overflow: 'hidden', backgroundColor: 'rgba(24, 24, 27, 0.6)' }}>
                     <View className="p-3 flex-row items-center gap-3">
-                      <View className="p-2 rounded-lg" style={{ backgroundColor: '#EF444415' }}>
-                        <IconSymbol name="trophy.fill" size={20} color="#EF4444" />
+                      <View className="p-2 rounded-xl bg-red-500/10">
+                        <IconSymbol name="trophy.fill" size={18} color="#EF4444" />
                       </View>
                       <View>
-                        <Text className="text-text-primary font-black text-xl font-display">0</Text>
-                        <Text className="text-text-tertiary text-[10px] font-bold uppercase tracking-wider font-label">LOGROS</Text>
+                        <Text className="text-text-primary font-black text-xl font-display">{level - 1}</Text>
+                        <Text className="text-text-tertiary text-[9px] font-bold uppercase tracking-widest font-label">LOGROS</Text>
                       </View>
                     </View>
-                  </SkiaGlassPane>
+                  </GlassPane>
                 </Animated.View>
 
-                <Animated.View
-                  entering={FadeInDown.delay(200).springify()}
-                  className="flex-1 min-w-[45%]"
-                >
-                  <SkiaGlassPane
-                    height={undefined}
-                    cornerRadius={16}
-                    backgroundColor="rgba(20, 20, 23, 0.5)"
-                    borderColor="rgba(255, 255, 255, 0.08)"
-                  >
-                    <View className="p-3 flex-row items-center gap-3">
-                      <View className="p-2 rounded-lg" style={{ backgroundColor: '#8B5CF615' }}>
-                        <IconSymbol name="star.fill" size={20} color="#8B5CF6" />
-                      </View>
-                      <View>
-                        <Text className="text-white text-5xl font-black font-display mb-2">{level}</Text>
-                        <Text className="text-text-secondary text-[10px] uppercase font-bold tracking-wider font-label">NIVEL</Text>
-                      </View>
-                    </View>
-                  </SkiaGlassPane>
-                </Animated.View>
               </View>
 
-              <CoherenceChart />
+              <Animated.View entering={FadeInDown.springify().damping(18).stiffness(90).mass(1.2).delay(700)}>
+                <CoherenceChart />
+              </Animated.View>
             </Animated.View>
 
             <Animated.View
-              entering={FadeInDown.delay(400).springify()}
+              entering={FadeInDown.springify().damping(18).stiffness(90).mass(1.2).delay(800)}
               className="py-8 px-4"
             >
-              <Text className="text-text-primary font-black text-2xl uppercase tracking-wider font-display text-center mb-4">
+              <Text className="text-text-primary font-black text-xl uppercase tracking-[0.2em] font-display text-center mb-6 opacity-90">
                 TU TOTEM
               </Text>
               <TotemView />
-              <Text className="text-text-secondary text-center mt-4 text-sm">
-                Nivel {level} - {level < 10 ? 'TOTEM 1: Roca sin cincelar' : level < 30 ? 'TOTEM 2: Piedra tallada' : 'TOTEM 3: Monumento forjado'}
+              <Text className="text-text-tertiary text-center mt-6 text-xs font-label tracking-widest">
+                {level < 10 ? 'FASE 1: ROCA SIN CINCELAR' : level < 30 ? 'FASE 2: PIEDRA TALLADA' : 'FASE 3: MONUMENTO FORJADO'}
               </Text>
             </Animated.View>
 
-            {/* PORTAL VIEW - ESTADO DE CONSCIENCIA */}
             <Animated.View
-              entering={FadeInDown.delay(450).springify()}
-              className="py-6 px-4 bg-card-black/30 border-y border-border-subtle"
+              entering={FadeInDown.springify().damping(18).stiffness(90).mass(1.2).delay(450)}
+              className="py-8 px-4 bg-card-black/40 border-y border-white/5 backdrop-blur-sm"
             >
-              <Text className="text-text-primary font-black text-2xl uppercase tracking-wider font-display text-center mb-6">
+              <Text className="text-text-primary font-black text-xl uppercase tracking-[0.2em] font-display text-center mb-8 opacity-90">
                 ESTADO DEL PORTAL
               </Text>
               <PortalView />
             </Animated.View>
 
-            {/* Action Button - Premium CTA */}
             <Animated.View
-              entering={FadeInDown.delay(450).springify()}
-              className="px-4 py-4"
+              entering={FadeInDown.springify().damping(18).stiffness(90).mass(1.2).delay(450)}
+              className="px-6 py-8"
             >
               <TouchableOpacity
-                className="bg-card-black border border-border-subtle p-4 rounded-premium active:scale-97"
+                className="bg-molten-core p-5 rounded-2xl active:scale-95 shadow-lg shadow-molten-core/20"
+                style={{
+                  shadowColor: '#FF3B00',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 10,
+                  elevation: 5
+                }}
                 onPress={() => router.push('/habits')}
               >
                 <View className="flex-row items-center justify-between">
                   <View>
-                    <Text className="text-text-primary font-bold text-base uppercase tracking-wider">
-                      VER MIS PROTOCOLOS
+                    <Text className="text-white font-black text-lg uppercase tracking-wider font-display">
+                      GESTIONAR PROTOCOLO
                     </Text>
-                    <Text className="text-text-tertiary text-xs mt-1">
-                      Gestiona tus hábitos diarios
+                    <Text className="text-white/80 text-xs mt-1 font-label tracking-wide">
+                      Acceder al panel de hábitos
                     </Text>
                   </View>
-                  <IconSymbol name="chevron.right" size={20} color="#A1A1A1" />
+                  <View className="bg-white/20 p-2 rounded-full">
+                    <IconSymbol name="chevron.right" size={20} color="white" />
+                  </View>
                 </View>
               </TouchableOpacity>
             </Animated.View>

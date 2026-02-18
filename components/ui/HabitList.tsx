@@ -1,17 +1,21 @@
+import { ParticleExplosion } from '@/components/ParticleExplosion';
+import { ToastNotification } from '@/components/ToastNotification';
 import { useGlobalAlert } from '@/context/GlobalAlertContext';
 import { useHabits } from '@/hooks/useHabits';
+import { triggerSuccessFeedback } from '@/services/FeedbackManager';
+import { getForgeMessage } from '@/services/MessageGeneratorService';
 
 import { PortalDecisionType } from '@/hooks/usePortalDecision';
 import { useSoundSystem } from '@/hooks/useSoundSystem';
 import { Habit, SensorySlideData } from '@/types';
 import { FlashList as ShopifyFlashList } from '@shopify/flash-list';
 import React, { useCallback, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
-import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
-import Reanimated, { FadeInDown, useAnimatedStyle } from 'react-native-reanimated';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { DailyProgressBar } from './DailyProgressBar';
 import { IconSymbol } from './icon-symbol';
+import { IgnitionStrikeCard } from './IgnitionStrikeCard';
 import { PortalDecisionModal } from './PortalDecisionModal';
-import { QuestCard } from './QuestCard';
+import { RewardPopup } from './RewardPopup';
 import { SensorySlideCard } from './SensorySlideCard';
 
 // Fix for FlashList type mismatch
@@ -19,8 +23,16 @@ const FlashList = ShopifyFlashList as any;
 
 export const HabitList = () => {
     const { showAlert } = useGlobalAlert();
-    const { habits, loading, logHabit, deleteHabit } = useHabits();
+    const { habits, loading, logHabit, deleteHabit, lastReward } = useHabits();
     const { playSound, playHaptic } = useSoundSystem();
+
+    console.log('[HABIT_LIST] Current Habits State:', {
+        count: habits.length,
+        loading,
+        ids: habits.map(h => h.id),
+        titles: habits.map(h => h.title),
+        completedToday: habits.map(h => `${h.title}: ${h.completed_today}`)
+    });
     const [filter, setFilter] = useState<'ALL' | 'IRON' | 'FIRE' | 'STEEL' | 'FOCUS'>('ALL');
     const [isEditing, setIsEditing] = useState(false);
 
@@ -28,21 +40,46 @@ export const HabitList = () => {
     const [portalModalVisible, setPortalModalVisible] = useState(false);
     const [pendingHabit, setPendingHabit] = useState<{ id: string; title: string; status: 'completed' | 'failed' } | null>(null);
 
+    // Reward Popup State
+    const [showRewardPopup, setShowRewardPopup] = useState(false);
+
     // Sensory Slide State
     const [selectedSensorySlide, setSelectedSensorySlide] = useState<{ habitId: string; data: SensorySlideData } | null>(null);
 
     const filteredHabits = React.useMemo(() => {
-        if (filter === 'ALL') return habits;
-        return habits.filter(h => h.attribute === filter);
+        let result = habits;
+        if (filter !== 'ALL') {
+            result = habits.filter(h => h.attribute === filter);
+        }
+        console.log('[HABIT_LIST] Filtered Habits:', {
+            filter,
+            count: result.length,
+            ids: result.map(h => h.id)
+        });
+        return result;
     }, [habits, filter]);
 
     const handleSwipe = useCallback(async (habitId: string, habitTitle: string, status: 'completed' | 'failed') => {
         // Only show portal modal for completed habits
         if (status === 'completed') {
-            setPendingHabit({ id: habitId, title: habitTitle, status });
-            setPortalModalVisible(true);
+            try {
+                // 1. Immediate Optimistic Log (returns variable reward)
+                const reward = await logHabit(habitId, 'completed');
+
+                // 2. Show Reward Popup first
+                if (reward) {
+                    setShowRewardPopup(true);
+                }
+
+                // 3. Then Show Portal Modal for "Juice" & Decision
+                setPendingHabit({ id: habitId, title: habitTitle, status });
+                setPortalModalVisible(true);
+            } catch (error) {
+                console.error('HABIT LOG ERROR:', error);
+                showAlert('Error', 'Failed to log protocol.');
+            }
         } else {
-            // For failed habits, log directly (will be handled by GPS Emocional later)
+            // For failed habits, log directly
             try {
                 await logHabit(habitId, status);
             } catch (error) {
@@ -51,15 +88,39 @@ export const HabitList = () => {
         }
     }, [logHabit]);
 
+    // Emotional Design State
+    const [toastMessage, setToastMessage] = useState('');
+    const [showParticles, setShowParticles] = useState(false);
+    // Center of screen for now, or maybe capture press location?
+    // Since it comes from a modal, screen center is appropriate for the "Event".
+    const [particlePosition, setParticlePosition] = useState({ x: 200, y: 400 });
+
     const handlePortalDecision = async (decision: PortalDecisionType) => {
         if (!pendingHabit) return;
 
         try {
-            // Log the habit completion
-            await logHabit(pendingHabit.id, pendingHabit.status);
-            // Portal decision is already recorded by the modal's hook
+            // NOTE: Habit is already logged in handleSwipe!
+            // We only handle the "Juice" and detailed decision recording here.
+
+            // JUICY FEEDBACK
+            if (decision === 'BRIGHTEN') {
+                // 1. Sensory Feedback
+                await triggerSuccessFeedback('habitCompletion');
+
+                // 2. Visual Particles (Center of screen approx)
+                setParticlePosition({ x: 200, y: 300 }); // Approximate center
+                setShowParticles(true);
+
+                // 3. Thematic Message
+                const msg = getForgeMessage('HABIT_COMPLETION');
+                setToastMessage(msg);
+            }
+
         } catch (error) {
-            showAlert('Error', 'Failed to log protocol.');
+            console.error('PORTAL DECISION ERROR:', error);
+            const err = error as any;
+            // Don't show alert here since the main action (completion) succeeded
+            // showAlert('Error', `Failed to log: ${err.message || 'Unknown error'}`);
         } finally {
             setPendingHabit(null);
         }
@@ -121,73 +182,7 @@ export const HabitList = () => {
         }
     };
 
-    const renderItem = ({ item, index }: { item: Habit, index: number }) => (
-        <Reanimated.View
-            entering={FadeInDown.delay(index * 100).springify()}
-            style={{ marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 12 }}
-        >
-            {isEditing && (
-                <TouchableOpacity
-                    onPress={() => handleDeleteHabit(item)}
-                    className="bg-red-500/10 border border-red-500/50 w-10 h-10 rounded-full items-center justify-center"
-                >
-                    <IconSymbol name="trash.fill" size={16} color="#EF4444" />
-                </TouchableOpacity>
-            )}
-
-            <View style={{ flex: 1 }}>
-                <ReanimatedSwipeable
-                    containerStyle={{ width: '100%' }}
-                    friction={2}
-                    enableTrackpadTwoFingerGesture
-                    rightThreshold={40}
-                    leftThreshold={40}
-                    enabled={!item.completed_today && !isEditing} // Disable swipe if completed OR editing
-                    renderLeftActions={(_prog, drag) => {
-                        const styleAnimation = useAnimatedStyle(() => ({
-                            transform: [{ translateX: drag.value - 80 }],
-                        }));
-                        return (
-                            <Reanimated.View style={styleAnimation} className="bg-emerald-900/50 justify-center items-center w-20 rounded-xl mb-3 h-full absolute left-0">
-                                <IconSymbol name="checkmark.circle.fill" size={24} color="#10B981" />
-                            </Reanimated.View>
-                        );
-                    }}
-                    renderRightActions={(_prog, drag) => {
-                        const styleAnimation = useAnimatedStyle(() => ({
-                            transform: [{ translateX: drag.value + 80 }],
-                        }));
-                        return (
-                            <Reanimated.View style={styleAnimation} className="bg-amber-900/50 justify-center items-center w-20 rounded-xl mb-3 h-full absolute right-0 border border-amber-500/30">
-                                <IconSymbol name="arrow.triangle.2.circlepath" size={24} color="#F59E0B" />
-                            </Reanimated.View>
-                        );
-                    }}
-                    onSwipeableOpen={(direction) => {
-                        if (direction === 'left') {
-                            playHaptic('medium');
-                            handleSwipe(item.id, item.title, 'completed');
-                        } else if (direction === 'right') {
-                            playSound('recalibrate');
-                            handleSwipe(item.id, item.title, 'failed');
-                        }
-                    }}
-                >
-                    <TouchableOpacity
-                        activeOpacity={1}
-                    // Disabled press actions as requested to remove "Visual Mode"
-                    // onPress={() => !item.completed_today && !isEditing && handleHabitPress(item)}
-                    >
-                        <QuestCard
-                            habit={item}
-                            onComplete={() => !isEditing && handleSwipe(item.id, item.title, 'completed')}
-                            onFail={() => !isEditing && handleSwipe(item.id, item.title, 'failed')}
-                        />
-                    </TouchableOpacity>
-                </ReanimatedSwipeable>
-            </View>
-        </Reanimated.View>
-    );
+    // Standard render item function removed in favor of direct mapping for debug
 
     if (loading) {
         return (
@@ -196,6 +191,9 @@ export const HabitList = () => {
             </View>
         );
     }
+
+    const completedCount = habits.filter(h => h.completed_today).length;
+    const totalCount = habits.length;
 
     if (filteredHabits.length === 0) {
         return (
@@ -211,7 +209,7 @@ export const HabitList = () => {
     return (
         <>
             {/* Context Header */}
-            <View className="flex-row justify-between items-center px-4 mb-4">
+            <View className="flex-row justify-between items-center px-4 mb-3">
                 <Text
                     className="text-white font-black italic text-xl uppercase tracking-tighter font-mono"
                     style={{
@@ -235,25 +233,51 @@ export const HabitList = () => {
 
                     {!isEditing && (
                         <View className="bg-[#1A1110] px-3 py-1 rounded border border-[#F97316]">
-                            <Text className="text-[#F97316] font-bold text-[10px] tracking-widest">{filteredHabits.length} ACTIVOS</Text>
+                            <Text className="text-[#F97316] font-bold text-[10px] tracking-widest">
+                                {filteredHabits.filter(h => !h.completed_today).length} PENDIENTES
+                            </Text>
                         </View>
                     )}
                 </View>
+            </View>
+
+            {/* Integrated Progress Indicator */}
+            <View className="px-4 mb-2">
+                <DailyProgressBar completed={completedCount} total={totalCount} />
             </View>
 
             <View className="px-4 mb-2 h-4">
                 {isEditing && <Text className="text-red-500 text-[10px] text-right italic font-bold">Toca el ícono de basura para eliminar</Text>}
             </View>
 
-            <View style={{ minHeight: 200, flex: 1 }}>
-                <FlashList
-                    data={filteredHabits}
-                    renderItem={renderItem}
-                    estimatedItemSize={110}
-                    keyExtractor={(item: Habit) => item.id}
+            <View style={{ flex: 1, minHeight: 400 }}>
+                <ScrollView
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 100, paddingHorizontal: 16 }}
-                />
+                    contentContainerStyle={{ paddingBottom: 150, paddingHorizontal: 16 }}
+                >
+                    {filteredHabits.map((item, index) => (
+                        <View key={item.id} style={{ marginBottom: 12 }}>
+                            <IgnitionStrikeCard
+                                habit={item}
+                                isEditing={isEditing}
+                                onDelete={() => handleDeleteHabit(item)}
+                                onComplete={() => !isEditing && handleSwipe(item.id, item.title, 'completed')}
+                            />
+                        </View>
+                    ))}
+
+                    {filteredHabits.length === 0 && (
+                        <View className="py-20 items-center justify-center">
+                            <IconSymbol name="list.bullet.rectangle.fill" size={48} color="rgba(255,255,255,0.05)" />
+                            <Text className="text-text-tertiary font-bold uppercase tracking-[0.2em] mt-4">
+                                NO HAY PROTOCOLOS
+                            </Text>
+                            <Text className="text-text-tertiary/50 text-[10px] mt-2">
+                                Forja uno nuevo para comenzar
+                            </Text>
+                        </View>
+                    )}
+                </ScrollView>
             </View>
 
             {/* Sensory Slide Card */}
@@ -277,6 +301,26 @@ export const HabitList = () => {
                     setPendingHabit(null);
                 }}
             />
+
+            {/* Variable XP Reward Popup */}
+            {lastReward && (
+                <RewardPopup
+                    reward={lastReward}
+                    visible={showRewardPopup}
+                    onComplete={() => setShowRewardPopup(false)}
+                />
+            )}
+
+            <ToastNotification message={toastMessage} onHide={() => setToastMessage('')} />
+            {
+                showParticles && (
+                    <ParticleExplosion
+                        trigger={showParticles}
+                        position={particlePosition}
+                        onComplete={() => setShowParticles(false)}
+                    />
+                )
+            }
         </>
     );
 };

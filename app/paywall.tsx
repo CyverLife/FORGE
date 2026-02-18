@@ -14,7 +14,7 @@ export default function PaywallScreen() {
     ];
 
     return (
-        <View className="flex-1 bg-[#0E0E0E]">
+        <View className="flex-1 bg-obsidian-void">
             <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100 }}>
                 {/* Close Button */}
                 <TouchableOpacity onPress={() => router.back()} className="absolute top-12 left-6 z-10 p-2 bg-black/50 rounded-full">
@@ -24,12 +24,12 @@ export default function PaywallScreen() {
                 {/* Hero Section: Identity Narrative */}
                 <View className="pt-24 px-6 mb-12">
                     <View className="flex-row items-center gap-2 mb-4">
-                        <View className="w-2 h-2 bg-forge-red" />
+                        <View className="w-2 h-2 bg-molten-core" />
                         <Text className="text-gray-500 font-mono text-[10px] uppercase tracking-widest">SISTEMA CERRADO</Text>
                     </View>
                     <Text className="text-white text-5xl font-black uppercase tracking-tighter leading-[0.9] mb-4">
                         NO ERES <Text className="text-[#333]">ELLOS.</Text>{'\n'}
-                        ERES EL <Text className="text-forge-red">ARQUITECTO.</Text>
+                        ERES EL <Text className="text-molten-core">ARQUITECTO.</Text>
                     </Text>
                     <Text className="text-gray-400 text-lg leading-7 font-medium">
                         La mayoría existe por inercia. Tú estás aquí para construir.
@@ -48,12 +48,12 @@ export default function PaywallScreen() {
                                 <Text className="text-gray-600 text-xs font-mono">{feature.desc}</Text>
                             </View>
                             <View className="items-end">
-                                <Text className="text-gray-600 text-xs line-through decoration-forge-red">VALOR: {feature.value}</Text>
+                                <Text className="text-gray-600 text-xs line-through decoration-molten-core">VALOR: {feature.value}</Text>
                             </View>
                         </View>
                     ))}
 
-                    <View className="mt-4 pt-4 border-t border-forge-red/20 flex-row justify-between items-center">
+                    <View className="mt-4 pt-4 border-t border-molten-core/20 flex-row justify-between items-center">
                         <Text className="text-gray-400 font-bold uppercase tracking-widest text-xs">VALOR TOTAL REAL</Text>
                         <Text className="text-white font-black text-2xl">$2,400</Text>
                     </View>
@@ -101,7 +101,7 @@ export default function PaywallScreen() {
                             <Text className="text-white text-6xl font-black tracking-tighter">$29<Text className="text-2xl text-gray-500">.99</Text></Text>
                             <Text className="text-gray-600 text-xl font-bold ml-2">/ AÑO</Text>
                         </View>
-                        <Text className="text-forge-red text-[10px] font-mono mt-2 bg-forge-red/10 px-2 py-1">⚠️ EL PRECIO SUBE EN 48H</Text>
+                        <Text className="text-molten-core text-[10px] font-mono mt-2 bg-molten-core/10 px-2 py-1">⚠️ EL PRECIO SUBE EN 48H</Text>
                     </View>
 
                     <TouchableOpacity

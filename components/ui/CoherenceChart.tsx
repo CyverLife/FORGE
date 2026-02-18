@@ -1,40 +1,41 @@
 import { usePortalDecision } from '@/hooks/usePortalDecision';
 import { BlurMask, Canvas, Path, Skia } from '@shopify/react-native-skia';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Dimensions, Text, View } from 'react-native';
+import { LayoutChangeEvent, Text, View, useWindowDimensions } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
-const { width } = Dimensions.get('window');
 const CHART_HEIGHT = 160;
-const CHART_WIDTH = width - 40; // Padding
 const PADDING_VERTICAL = 20;
 
 export const CoherenceChart = () => {
+    const { width: windowWidth } = useWindowDimensions();
+    const [containerWidth, setContainerWidth] = useState(windowWidth - 32); // Reasonable default
     const { getRecentDecisions } = usePortalDecision();
     const [decisions, setDecisions] = useState<{ type: 'ANGEL' | 'APE'; created_at: string }[]>([]);
 
     useEffect(() => {
         getRecentDecisions(15).then(data => {
-            // Reverse to show chronological order (oldest -> newest) from left to right
             setDecisions(data.reverse());
         });
     }, []);
+
+    const onLayout = (event: LayoutChangeEvent) => {
+        const { width } = event.nativeEvent.layout;
+        setContainerWidth(width);
+    };
 
     const path = useMemo(() => {
         const skPath = Skia.Path.Make();
         if (decisions.length === 0) return skPath;
 
-        const stepX = CHART_WIDTH / (decisions.length - 1 || 1);
-        // Start at middle
+        const stepX = containerWidth / (decisions.length - 1 || 1);
         let currentY = CHART_HEIGHT / 2;
         skPath.moveTo(0, currentY);
 
         decisions.forEach((d: any, index) => {
-            // BRIGHTEN goes UP (lower Y), DARKEN goes DOWN (higher Y)
             const change = d.decision_type === 'BRIGHTEN' ? -20 : 20;
             currentY = Math.max(PADDING_VERTICAL, Math.min(CHART_HEIGHT - PADDING_VERTICAL, currentY + change));
 
-            // Smooth curve
             if (index === 0) {
                 skPath.moveTo(index * stepX, currentY);
             } else {
@@ -50,9 +51,8 @@ export const CoherenceChart = () => {
         });
 
         return skPath;
-    }, [decisions]);
+    }, [decisions, containerWidth]);
 
-    // Calculate current coherence trend
     const trend = useMemo(() => {
         if (decisions.length < 2) return 0;
         const last: any = decisions[decisions.length - 1];
@@ -64,18 +64,19 @@ export const CoherenceChart = () => {
     return (
         <Animated.View
             entering={FadeInDown.delay(200).springify()}
+            onLayout={onLayout}
             className="w-full bg-card-black/50 border border-white/10 rounded-3xl overflow-hidden mb-6"
-            style={{ height: 220 }}
+            style={{ height: 210 }}
         >
             {/* Header Data */}
             <View className="absolute top-4 left-4 z-10">
-                <Text className="text-text-tertiary text-xs uppercase tracking-widest font-bold">COHERENCIA</Text>
+                <Text className="text-text-tertiary text-[9px] uppercase tracking-widest font-bold">COHERENCIA</Text>
                 <View className="flex-row items-baseline gap-2">
-                    <Text className="text-white text-3xl font-black font-display tracking-tighter">
+                    <Text className="text-white text-2xl font-black font-display tracking-tighter">
                         {decisions.length > 0 ? (isPositive ? 'ASCENSO' : 'DESCENSO') : 'NEUTRAL'}
                     </Text>
                     <View className={`px-2 py-0.5 rounded-full ${isPositive ? 'bg-emerald-500/20' : 'bg-red-500/20'}`}>
-                        <Text className={`text-xs font-bold ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
+                        <Text className={`text-[10px] font-bold ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
                             {trend} (24h)
                         </Text>
                     </View>
@@ -83,9 +84,7 @@ export const CoherenceChart = () => {
             </View>
 
             {/* Skia Chart */}
-            <Canvas style={{ width: CHART_WIDTH, height: CHART_HEIGHT, position: 'absolute', bottom: 0 }}>
-                {/* Grid Lines */}
-                {/* Line Path */}
+            <Canvas style={{ width: containerWidth, height: CHART_HEIGHT, position: 'absolute', bottom: 0 }}>
                 <Path
                     path={path}
                     style="stroke"
@@ -94,11 +93,9 @@ export const CoherenceChart = () => {
                     strokeCap="round"
                     strokeJoin="round"
                 >
-                    {/* Neon Glow */}
                     <BlurMask blur={6} style="solid" />
                 </Path>
 
-                {/* Second layer for core brightness intensity */}
                 <Path
                     path={path}
                     style="stroke"
@@ -108,8 +105,6 @@ export const CoherenceChart = () => {
                     strokeCap="round"
                     strokeJoin="round"
                 />
-
-                {/* Gradient Fill below line (Optional, tricky with open path) */}
             </Canvas>
         </Animated.View>
     );

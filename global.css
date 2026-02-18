@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-lg border border-white/10;
+  }
+
+  /* The Anvil: Heavy, physical, permanent. */
+  .anvil-base {
+    @apply bg-deep-black border-t border-white/5;
+  }
+
+  /* Obsidian Plate: The standard surface. */
+  .glass-card {
+    @apply bg-obsidian-plate border border-white/5 shadow-lg shadow-black/50;
+  }
+
+  /* Strike Plate: Interactive habit container. */
+  .strike-plate {
+    @apply bg-obsidian-plate border border-white/5 active:bg-molten-core/10 active:border-molten-core/30 transition-colors duration-200;
+  }
+
+  .text-gradient {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-white to-cold-steel;
+  }
+
+  .ignited-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-molten-core to-molten-glow;
+  }
+}

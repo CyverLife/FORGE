@@ -19,14 +19,14 @@ export const Paywall = ({ visible, onClose }: { visible: boolean; onClose: () =>
 
     return (
         <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-            <View className="flex-1 bg-obsidian">
+            <View className="flex-1 bg-obsidian-void">
                 {/* Decoration */}
                 <View className="absolute top-0 w-full h-1/2 opacity-30">
                     <AntiGravityEngine active={true} intensity={0.8} />
                 </View>
 
                 <ScrollView className="flex-1 px-6 pt-12">
-                    <Text className="text-magma text-center text-sm font-bold tracking-[6px] mb-4">THE FORGEMASTER</Text>
+                    <Text className="text-molten-core text-center text-sm font-bold tracking-[6px] mb-4">THE FORGEMASTER</Text>
                     <Text className="text-white text-center text-4xl font-bold mb-8">Unlock Your Potential</Text>
 
                     <View className="space-y-4 mb-8">
@@ -36,7 +36,7 @@ export const Paywall = ({ visible, onClose }: { visible: boolean; onClose: () =>
                         <FeatureItem title="Exclusive Themes" description="Neon Blue, Cyberpunk Yellow, Pure White." />
                     </View>
 
-                    <GlassPane className="p-6 rounded-2xl items-center mb-8" opacity={0.1}>
+                    <GlassPane className="p-6 rounded-2xl items-center mb-8" intensity={30}>
                         <Text className="text-white text-3xl font-bold">{price}<Text className="text-base font-normal text-gray-400">/mo</Text></Text>
                         <Text className="text-gray-400 text-sm mt-2">7-Day Free Trial. Cancel anytime.</Text>
                     </GlassPane>
@@ -65,9 +65,9 @@ export const Paywall = ({ visible, onClose }: { visible: boolean; onClose: () =>
 };
 
 const FeatureItem = ({ title, description }: { title: string, description: string }) => (
-    <GlassPane className="p-4 rounded-xl flex-row items-center" opacity={0.05} blurAmount={5}>
-        <View className="w-8 h-8 rounded-full bg-magma/20 items-center justify-center mr-4">
-            <Text className="text-magma font-bold">✓</Text>
+    <GlassPane className="p-4 rounded-xl flex-row items-center" intensity={10}>
+        <View className="w-8 h-8 rounded-full bg-molten-core/20 items-center justify-center mr-4">
+            <Text className="text-molten-core font-bold">✓</Text>
         </View>
         <View className="flex-1">
             <Text className="text-white font-bold">{title}</Text>

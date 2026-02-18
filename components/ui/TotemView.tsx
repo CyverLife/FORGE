@@ -121,21 +121,21 @@ export const TotemView = () => {
     }));
 
     return (
-        <View className="items-center justify-center py-8">
+        <View className="items-center justify-center py-4">
             {/* Totem Name */}
             <Text
-                className="font-black text-xl uppercase tracking-widest font-display mb-2"
+                className="font-black text-lg uppercase tracking-widest font-display mb-1"
                 style={{ color: totemInfo.color }}
             >
                 {totemInfo.name}
             </Text>
 
             {/* Stage Indicator */}
-            <View className="flex-row items-center gap-1 mb-6">
+            <View className="flex-row items-center gap-1 mb-4">
                 {Array.from({ length: 4 }).map((_, i) => (
                     <View
                         key={i}
-                        className="h-1 w-8 rounded-full"
+                        className="h-1 w-6 rounded-full"
                         style={{
                             backgroundColor: i < totemInfo.stage ? totemInfo.color : '#2A2A2A',
                         }}
@@ -148,16 +148,16 @@ export const TotemView = () => {
                 style={[
                     {
                         position: 'absolute',
-                        width: 280,
-                        height: 280,
-                        top: 80
+                        width: 240,
+                        height: 240,
+                        top: 40
                     },
                     glowStyle
                 ]}
             >
                 <LinearGradient
                     colors={totemInfo.glowColor as any}
-                    style={{ flex: 1, borderRadius: 140 }}
+                    style={{ flex: 1, borderRadius: 120 }}
                     start={{ x: 0.5, y: 0.5 }}
                     end={{ x: 1, y: 1 }}
                 />
@@ -167,22 +167,22 @@ export const TotemView = () => {
             <Animated.View style={animatedStyle} className="items-center justify-center">
                 <Image
                     source={totemInfo.image}
-                    style={{ width: 200, height: 200 }}
+                    style={{ width: 180, height: 180 }}
                     contentFit="contain"
                 />
             </Animated.View>
 
             {/* Totem Description */}
-            <Text className="text-text-tertiary text-sm uppercase tracking-wider mt-4 text-center">
+            <Text className="text-text-tertiary text-[10px] uppercase tracking-wider mt-2 text-center">
                 {totemInfo.description}
             </Text>
 
             {/* Level Progress */}
-            <View className="mt-4 items-center">
-                <Text className="text-text-secondary text-xs mb-2">
+            <View className="mt-3 items-center">
+                <Text className="text-text-secondary text-[10px] mb-1">
                     Nivel {consciousnessLevel}
                 </Text>
-                <Text className="text-text-tertiary text-[10px]">
+                <Text className="text-text-tertiary text-[9px]">
                     {consciousnessRank === 'BRONCE' && 'Niveles 1-25'}
                     {consciousnessRank === 'PLATA' && 'Niveles 26-50'}
                     {consciousnessRank === 'ORO' && 'Niveles 51-75'}

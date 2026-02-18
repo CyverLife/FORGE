@@ -114,8 +114,8 @@ export const Moodboard = () => {
                             "The sculpture is already complete within the marble block, before I start my work. It is already there, I just have to chisel away the superfluous material."
                         </Text>
                         <View className="mt-4 flex-row items-center">
-                            <IconSymbol name="plus.circle.fill" size={20} color="#F97316" />
-                            <Text className="text-magma ml-2 font-bold text-xs uppercase tracking-widest">Begin Sculpting</Text>
+                            <IconSymbol name="plus.circle.fill" size={20} color="#FF3B00" />
+                            <Text className="text-molten-core ml-2 font-bold text-xs uppercase tracking-widest">Begin Sculpting</Text>
                         </View>
                     </View>
                 }

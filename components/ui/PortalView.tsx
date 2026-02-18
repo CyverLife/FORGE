@@ -1,7 +1,7 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useGamification } from '@/hooks/useGamification';
 import { usePortalDecision } from '@/hooks/usePortalDecision';
-import { BlurMask, Canvas, Circle, RadialGradient, vec } from '@shopify/react-native-skia';
+import { BlurMask, Canvas, Circle, Group, RadialGradient, vec } from '@shopify/react-native-skia';
 import { Image } from 'expo-image';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Text, View } from 'react-native';
@@ -97,12 +97,13 @@ export const PortalView = () => {
                 {/* Background Glow (Skia) */}
                 <View style={{ position: 'absolute' }}>
                     <Canvas style={{ width: PORTAL_SIZE * 1.2, height: PORTAL_SIZE * 1.2 }}>
-                        <RadialGradient
-                            c={vec(PORTAL_SIZE * 0.6, PORTAL_SIZE * 0.6)}
-                            r={PORTAL_SIZE * 0.6}
-                            colors={[portalState.color, 'transparent']}
-                            opacity={0.3}
-                        />
+                        <Group opacity={0.3}>
+                            <RadialGradient
+                                c={vec(PORTAL_SIZE * 0.6, PORTAL_SIZE * 0.6)}
+                                r={PORTAL_SIZE * 0.6}
+                                colors={[portalState.color, 'transparent']}
+                            />
+                        </Group>
                         <BlurMask blur={40} style="normal" />
                         <Circle cx={PORTAL_SIZE * 0.6} cy={PORTAL_SIZE * 0.6} r={PORTAL_SIZE * 0.4} color={portalState.color} opacity={0.2} />
                     </Canvas>
